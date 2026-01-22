@@ -71,8 +71,6 @@ const config = {
   },
   alias: {
     '@': path.resolve(__dirname, '..', 'src'),
-    '@plant-scanner/core': path.resolve(__dirname, '..', '..', '..', 'packages', 'core', 'src'),
-    '@plant-scanner/ui': path.resolve(__dirname, '..', '..', '..', 'packages', 'ui', 'src'),
   },
 };
 
