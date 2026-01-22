@@ -2,7 +2,7 @@ import Taro from '@tarojs/taro';
 import { View, Text, Image } from '@tarojs/components';
 import { Badge, Avatar } from '@nutui/nutui-react-taro';
 import { ViewProps } from '@tarojs/components';
-import './plant-card.scss';
+import './PlantCard.scss';
 
 interface PlantCardProps extends ViewProps {
   plant: {
@@ -24,20 +24,20 @@ export function PlantCard({ plant, onClick, className = '', ...props }: PlantCar
   const statusColors: Record<string, string> = {
     healthy: '#4CAF50',
     needs_attention: '#FF9800',
-    dying: '#F44336'
+    dying: '#F44336',
   };
 
   const statusTexts: Record<string, string> = {
     healthy: '健康',
     needs_attention: '需关注',
-    dying: '状态不佳'
+    dying: '状态不佳',
   };
 
   const taskIcons: Record<string, string> = {
     water: '💧',
     fertilize: '🧪',
     repot: '🪴',
-    prune: '✂️'
+    prune: '✂️',
   };
 
   return (
@@ -62,7 +62,7 @@ export function PlantCard({ plant, onClick, className = '', ...props }: PlantCar
             backgroundColor: statusColors[plant.status] || '#9E9E9E',
             position: 'absolute',
             top: '8px',
-            right: '8px'
+            right: '8px',
           }}
         />
       </View>
@@ -75,20 +75,22 @@ export function PlantCard({ plant, onClick, className = '', ...props }: PlantCar
           </Text>
         </View>
 
-        {plant.species_name && (
-          <Text className="plant-card__species">{plant.species_name}</Text>
-        )}
+        {plant.species_name && <Text className="plant-card__species">{plant.species_name}</Text>}
 
         {plant.next_task && (
           <View className="plant-card__task">
-            <Text className="plant-card__task-icon">
-              {taskIcons[plant.next_task.type] || '📋'}
-            </Text>
+            <Text className="plant-card__task-icon">{taskIcons[plant.next_task.type] || '📋'}</Text>
             <Text className="plant-card__task-text">
-              下次{plant.next_task.type === 'water' ? '浇水' :
-                     plant.next_task.type === 'fertilize' ? '施肥' :
-                     plant.next_task.type === 'repot' ? '换盆' :
-                     plant.next_task.type === 'prune' ? '修剪' : '护理'}
+              下次
+              {plant.next_task.type === 'water'
+                ? '浇水'
+                : plant.next_task.type === 'fertilize'
+                  ? '施肥'
+                  : plant.next_task.type === 'repot'
+                    ? '换盆'
+                    : plant.next_task.type === 'prune'
+                      ? '修剪'
+                      : '护理'}
               ：{plant.next_task.due_at}
             </Text>
           </View>

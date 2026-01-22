@@ -1,6 +1,6 @@
 module.exports = {
   env: {
-    NODE_ENV: '"production"'
+    NODE_ENV: '"production"',
   },
   defineConstants: {},
   mini: {},
@@ -13,5 +13,9 @@ module.exports = {
      *     .use(require('webpack-bundle-analyzer').BundleAnalyzerPlugin, [])
      * }
      */
-  }
+    webpackChain(chain) {
+      // Disable minification to avoid Terser conflicts with third-party libraries
+      chain.optimization.minimize(false);
+    },
+  },
 };

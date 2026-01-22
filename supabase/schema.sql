@@ -42,8 +42,8 @@ CREATE INDEX IF NOT EXISTS idx_plant_species_category ON plant_species(category)
 -- User's plants (instances)
 CREATE TABLE IF NOT EXISTS user_plants (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  user_id VARCHAR(100) NOT NULL,
-  species_id VARCHAR(100),
+  user_id UUID NOT NULL,
+  species_id UUID,
   nickname VARCHAR(100) NOT NULL,
   location_type VARCHAR(20) DEFAULT 'indoor',
   status VARCHAR(20) DEFAULT 'healthy',
@@ -61,9 +61,9 @@ CREATE INDEX IF NOT EXISTS idx_user_plants_status ON user_plants(status);
 -- Scan records
 CREATE TABLE IF NOT EXISTS scan_records (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  user_id VARCHAR(100) NOT NULL,
+  user_id UUID NOT NULL,
   image_url VARCHAR(500) NOT NULL,
-  result_species_id VARCHAR(100),
+  result_species_id UUID,
   result_species_name VARCHAR(200),
   confidence DECIMAL(4,3),
   suggested_species JSONB,
@@ -76,7 +76,7 @@ CREATE INDEX IF NOT EXISTS idx_scan_records_created_at ON scan_records(created_a
 -- Care tasks
 CREATE TABLE IF NOT EXISTS care_tasks (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  user_plant_id VARCHAR(100) NOT NULL,
+  user_plant_id UUID NOT NULL,
   task_type VARCHAR(20) NOT NULL,
   custom_name VARCHAR(100),
   next_due_at TIMESTAMP WITH TIME ZONE NOT NULL,
@@ -95,7 +95,7 @@ CREATE INDEX IF NOT EXISTS idx_care_tasks_status ON care_tasks(status);
 -- Reminder configurations
 CREATE TABLE IF NOT EXISTS reminder_configs (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  user_id VARCHAR(100) NOT NULL UNIQUE,
+  user_id UUID NOT NULL UNIQUE,
   push_enabled BOOLEAN DEFAULT TRUE,
   mini_program_subscription BOOLEAN DEFAULT FALSE,
   quiet_hours_start VARCHAR(10),
@@ -118,7 +118,7 @@ ALTER TABLE reminder_configs ENABLE ROW LEVEL SECURITY;
 
 -- Users: Users can only access their own data
 CREATE POLICY "Users can CRUD own data" ON users
-  FOR ALL USING (auth.uid()::TEXT = id);
+  FOR ALL USING (auth.uid() = id);
 
 -- Plant species: Public read access
 CREATE POLICY "Anyone can read plant species" ON plant_species
@@ -126,11 +126,11 @@ CREATE POLICY "Anyone can read plant species" ON plant_species
 
 -- User plants: Users can CRUD their own plants
 CREATE POLICY "Users can CRUD own plants" ON user_plants
-  FOR ALL USING (user_id = auth.uid()::TEXT);
+  FOR ALL USING (user_id = auth.uid());
 
 -- Scan records: Users can CRUD their own scan records
 CREATE POLICY "Users can CRUD own scans" ON scan_records
-  FOR ALL USING (user_id = auth.uid()::TEXT);
+  FOR ALL USING (user_id = auth.uid());
 
 -- Care tasks: Users can CRUD their own tasks
 CREATE POLICY "Users can CRUD own tasks" ON care_tasks
@@ -138,13 +138,13 @@ CREATE POLICY "Users can CRUD own tasks" ON care_tasks
     EXISTS (
       SELECT 1 FROM user_plants
       WHERE user_plants.id = care_tasks.user_plant_id
-      AND user_plants.user_id = auth.uid()::TEXT
+      AND user_plants.user_id = auth.uid()
     )
   );
 
 -- Reminder configs: Users can CRUD their own config
 CREATE POLICY "Users can CRUD own reminder config" ON reminder_configs
-  FOR ALL USING (user_id = auth.uid()::TEXT);
+  FOR ALL USING (user_id = auth.uid());
 
 -- Storage policies
 CREATE POLICY "Users can upload plant images" ON storage.objects

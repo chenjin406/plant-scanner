@@ -1,6 +1,7 @@
 import Taro from '@tarojs/taro';
 import { View, Text, Input, Image, ScrollView } from '@tarojs/components';
-import { useState, useEffect } from 'reactimport { PlantCard, NoResultsState, LoadingSpinner } from '@plant-scanner/ui';
+import { useState, useEffect } from 'react';
+import { PlantCard, NoResultsState, LoadingSpinner } from '@plant-scanner/ui';
 import './search.scss';
 
 interface SearchResult {
@@ -51,7 +52,7 @@ export default function SearchPage() {
     try {
       const response = await Taro.request({
         url: `/api/search?q=${encodeURIComponent(searchQuery)}`,
-        method: 'GET'
+        method: 'GET',
       });
 
       if (response.statusCode === 200 && response.data.success) {
@@ -60,7 +61,7 @@ export default function SearchPage() {
         setResults([]);
         Taro.showToast({
           title: '搜索失败，请重试',
-          icon: 'none'
+          icon: 'none',
         });
       }
     } catch (error) {
@@ -68,7 +69,7 @@ export default function SearchPage() {
       setResults([]);
       Taro.showToast({
         title: '网络错误，请重试',
-        icon: 'none'
+        icon: 'none',
       });
     } finally {
       setIsLoading(false);
@@ -78,7 +79,7 @@ export default function SearchPage() {
   const handleResultClick = (result: SearchResult) => {
     // Navigate to plant detail/care guide
     Taro.navigateTo({
-      url: `/pages/care-guide/index?species_id=${result.id}`
+      url: `/pages/care-guide/index?species_id=${result.id}`,
     });
   };
 
@@ -98,10 +99,10 @@ export default function SearchPage() {
         if (res.confirm) {
           Taro.showToast({
             title: '感谢反馈！',
-            icon: 'success'
+            icon: 'success',
           });
         }
-      }
+      },
     });
   };
 
@@ -152,19 +153,23 @@ export default function SearchPage() {
                       onClick={() => handleResultClick(result)}
                     >
                       <Image
-                        src={result.image_urls?.[0] || 'https://images.unsplash.com/photo-1459411552884-841db9b3cc2a?w=200'}
+                        src={
+                          result.image_urls?.[0] ||
+                          'https://images.unsplash.com/photo-1459411552884-841db9b3cc2a?w=200'
+                        }
                         mode="aspectFill"
                         className="search__result-image"
                       />
                       <View className="search__result-info">
                         <Text className="search__result-name">{result.common_name}</Text>
-                        <Text className="search__result-scientific">
-                          {result.scientific_name}
-                        </Text>
+                        <Text className="search__result-scientific">{result.scientific_name}</Text>
                         <View className="search__result-tags">
                           <Text className="search__result-tag">
-                            {result.care_profile?.difficulty === 'easy' ? '简单' :
-                             result.care_profile?.difficulty === 'medium' ? '中等' : '困难'}
+                            {result.care_profile?.difficulty === 'easy'
+                              ? '简单'
+                              : result.care_profile?.difficulty === 'medium'
+                                ? '中等'
+                                : '困难'}
                           </Text>
                           <Text className="search__result-tag">
                             {result.care_profile?.water_frequency_days}天/浇水
@@ -177,15 +182,10 @@ export default function SearchPage() {
               </View>
             ) : (
               <View className="search__empty">
-                <NoResultsState
-                  keyword={query}
-                  onClear={handleClearSearch}
-                />
+                <NoResultsState keyword={query} onClear={handleClearSearch} />
                 {/* Feedback for inaccurate recognition */}
                 <View className="search__feedback" onClick={handleFeedback}>
-                  <Text className="search__feedback-text">
-                    识别结果不准确？
-                  </Text>
+                  <Text className="search__feedback-text">识别结果不准确？</Text>
                   <Text className="search__feedback-link">反馈问题</Text>
                 </View>
               </View>
@@ -196,15 +196,13 @@ export default function SearchPage() {
           <View className="search__suggestions">
             <Text className="search__suggestions-title">热门搜索</Text>
             <View className="search__suggestion-tags">
-              {['龟背竹', '绿萝', '多肉', '吊兰', '虎皮兰', '发财树', '橡皮树', '琴叶榕'].map((tag) => (
-                <View
-                  key={tag}
-                  className="search__suggestion-tag"
-                  onClick={() => setQuery(tag)}
-                >
-                  <Text>{tag}</Text>
-                </View>
-              ))}
+              {['龟背竹', '绿萝', '多肉', '吊兰', '虎皮兰', '发财树', '橡皮树', '琴叶榕'].map(
+                (tag) => (
+                  <View key={tag} className="search__suggestion-tag" onClick={() => setQuery(tag)}>
+                    <Text>{tag}</Text>
+                  </View>
+                )
+              )}
             </View>
           </View>
         )}
