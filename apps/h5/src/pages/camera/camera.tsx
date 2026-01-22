@@ -20,7 +20,7 @@ export default function CameraPage() {
     { key: 'camera', label: '识别', icon: '📷' },
     { key: 'garden', label: '花园', icon: '🌿' },
     { key: 'guide', label: '百科', icon: '📖' },
-    { key: 'settings', label: '设置', icon: '⚙️' }
+    { key: 'settings', label: '设置', icon: '⚙️' },
   ];
   const [activeNav, setActiveNav] = useState('camera');
 
@@ -29,14 +29,16 @@ export default function CameraPage() {
     Taro.createCameraInstance({
       maxDuration: 60,
       devicePosition: cameraFacing,
-      flash: flashMode
-    }).then((ctx) => {
-      cameraContext.current = ctx;
-      ctx.start();
-    }).catch((err) => {
-      console.error('Camera init error:', err);
-      // Fallback for H5 or non-camera environments
-    });
+      flash: flashMode,
+    })
+      .then((ctx) => {
+        cameraContext.current = ctx;
+        ctx.start();
+      })
+      .catch((err) => {
+        console.error('Camera init error:', err);
+        // Fallback for H5 or non-camera environments
+      });
   });
 
   useDidHide(() => {
@@ -55,7 +57,7 @@ export default function CameraPage() {
         // For H5/demo, use a placeholder
         setCapturedImage('https://images.unsplash.com/photo-1459411552884-841db9b3cc2a?w=400');
         setState('photo');
-      }
+      },
     });
   };
 
@@ -77,19 +79,19 @@ export default function CameraPage() {
         method: 'POST',
         data: {
           image: capturedImage,
-          userId: Taro.getStorageSync('userId') || undefined
-        }
+          userId: Taro.getStorageSync('userId') || undefined,
+        },
       });
 
       if (response.statusCode === 200 && response.data.success) {
         // Navigate to result page with data
         Taro.navigateTo({
-          url: `/pages/result/index?scan_id=${response.data.data.scan_id}`
+          url: `/pages/result/index?scan_id=${response.data.data.scan_id}`,
         });
       } else {
         Taro.showToast({
           title: '识别失败，请重试',
-          icon: 'none'
+          icon: 'none',
         });
         setState('photo');
       }
@@ -97,7 +99,7 @@ export default function CameraPage() {
       console.error('Identify error:', error);
       Taro.showToast({
         title: '网络错误，请重试',
-        icon: 'none'
+        icon: 'none',
       });
       setState('photo');
     } finally {
@@ -112,7 +114,7 @@ export default function CameraPage() {
       success: (res) => {
         setCapturedImage(res.tempFilePaths[0]);
         setState('photo');
-      }
+      },
     });
   };
 
@@ -132,6 +134,13 @@ export default function CameraPage() {
 
   return (
     <View className="camera-page">
+      {/* Background image from prototype */}
+      <Image
+        src="https://lh3.googleusercontent.com/aida-public/AB6AXuC6diuz0kF4yNxA6x8j_bIELMDmowE17CnAYUSgm1Aut1XLUrywHEkA9oDl-gC_cK-5HX4v050fohi_WCM5TkHiTk-yRpEfb-VMrCVzSY6AtEYSICcnM3qEesZVmzhMHw3ZOeEBPz57ldCPJvc7W_6OOwfxYV6zZQS8I5Br5xF0-quf8sF79bHoy1lMnUkgTHFrG-dZ1v1NwmQS-2SN0latTlUiFhcpJEsJTQVYKPVS3rwkzuTX0lOiBVIHzenDxTMH8QscY4NSERri"
+        mode="aspectFill"
+        className="camera-page__bg-image"
+      />
+
       {/* Main camera area */}
       <View className="camera__viewport">
         {state === 'preview' && (
@@ -143,7 +152,7 @@ export default function CameraPage() {
               className="camera__placeholder"
             />
 
-            {/* Scanning frame overlay */}
+            {/* Scanning frame overlay - glassmorphism */}
             <View className="camera__frame">
               <View className="camera__frame-corner camera__frame-corner--tl"></View>
               <View className="camera__frame-corner camera__frame-corner--tr"></View>
@@ -162,11 +171,7 @@ export default function CameraPage() {
 
         {state === 'photo' && (
           <View className="camera__photo">
-            <Image
-              src={capturedImage}
-              mode="aspectFill"
-              className="camera__captured"
-            />
+            <Image src={capturedImage} mode="aspectFill" className="camera__captured" />
           </View>
         )}
 
@@ -186,10 +191,7 @@ export default function CameraPage() {
         <View className="camera__scan-mode">
           <Text>扫描模式</Text>
         </View>
-        <View
-          className="camera__flash"
-          onClick={handleFlashToggle}
-        >
+        <View className="camera__flash" onClick={handleFlashToggle}>
           <Text>{flashMode === 'off' ? '⚡' : flashMode === 'on' ? '🔥' : '🔆'}</Text>
         </View>
       </View>
@@ -199,11 +201,7 @@ export default function CameraPage() {
         <View className="camera__controls">
           {/* Album button */}
           <View className="camera__album" onClick={handleChooseAlbum}>
-            <Image
-              src="https://images.unsplash.com/photo-1466692476868-aef1dfb1e735?w=100"
-              mode="aspectFill"
-              className="camera__album-thumb"
-            />
+            <View className="camera__album-icon">🖼️</View>
             <Text className="camera__album-label">相册</Text>
           </View>
 
@@ -238,11 +236,7 @@ export default function CameraPage() {
 
         {/* Bottom navigation */}
         <View className="camera__nav-wrapper">
-          <SimpleBottomNav
-            items={navItems}
-            activeKey={activeNav}
-            onChange={setActiveNav}
-          />
+          <SimpleBottomNav items={navItems} activeKey={activeNav} onChange={setActiveNav} />
         </View>
       </View>
     </View>
