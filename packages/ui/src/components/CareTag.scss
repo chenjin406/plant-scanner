@@ -1,0 +1,45 @@
+.care-tag {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 16px;
+  font-weight: 500;
+
+  &--sm {
+    padding: 2px 8px;
+    font-size: 11px;
+
+    .care-tag__icon {
+      font-size: 12px;
+      margin-right: 2px;
+    }
+  }
+
+  &--md {
+    padding: 4px 12px;
+    font-size: 12px;
+
+    .care-tag__icon {
+      font-size: 14px;
+      margin-right: 4px;
+    }
+  }
+
+  &--lg {
+    padding: 6px 16px;
+    font-size: 14px;
+
+    .care-tag__icon {
+      font-size: 16px;
+      margin-right: 6px;
+    }
+  }
+
+  &__icon {
+    display: flex;
+    align-items: center;
+  }
+
+  &__text {
+    line-height: 1.2;
+  }
+}

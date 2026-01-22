@@ -1,0 +1,131 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Users table (extends Supabase auth.users)
+model users {
+  id             String   @id @default(uuid())
+  nickname       String   @db.VarChar(100)
+  avatar_url     String?  @db.VarChar(500)
+  locale         String   @default("zh-CN") @db.VarChar(10)
+  timezone       String   @default("Asia/Shanghai") @db.VarChar(50)
+  auth_provider  String   @default("phone") @db.VarChar(20)
+  auth_provider_id String? @db.VarChar(100)
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updated_at
+
+  @@index([auth_provider_id])
+  @@map("users")
+}
+
+// Plant species database
+model plant_species {
+  id               String   @id @default(uuid())
+  common_name      String   @db.VarChar(200)
+  scientific_name  String   @db.VarChar(200)
+  category         String   @db.VarChar(50)
+  description      String?  @db.Text
+  image_urls       String[] @db.VarChar(500)
+  tags             String[] @db.VarChar(100)
+
+  // Care profile (JSON)
+  care_profile     Json
+
+  // Metadata
+  source           String?  @db.VarChar(50) // GBIF, Wikidata, iNaturalist, OpenFarm
+  external_id      String?  @db.VarChar(100)
+  license          String?  @db.VarChar(50)
+
+  created_at       DateTime @default(now())
+  updated_at       DateTime @updated_at
+
+  @@unique([scientific_name])
+  @@index([common_name])
+  @@index([category])
+  @@map("plant_species")
+}
+
+// User's plants (instances)
+model user_plants {
+  id            String   @id @default(uuid())
+  user_id       String   @db.VarChar(100)
+  species_id    String   @db.VarChar(100)
+  nickname      String   @db.VarChar(100)
+  location_type String   @default("indoor") @db.VarChar(20)
+  status        String   @default("healthy") @db.VarChar(20)
+  notes         String?  @db.Text
+  image_url     String?  @db.VarChar(500)
+  last_action_at DateTime?
+
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updated_at
+
+  // Relations
+  species       plant_species? @relation(fields: [species_id], references: [id])
+  tasks         care_tasks[]
+
+  @@index([user_id])
+  @@index([species_id])
+  @@index([status])
+  @@map("user_plants")
+}
+
+// Scan records
+model scan_records {
+  id                 String   @id @default(uuid())
+  user_id            String   @db.VarChar(100)
+  image_url          String   @db.VarChar(500)
+  result_species_id  String?  @db.VarChar(100)
+  result_species_name String? @db.VarChar(200)
+  confidence         Float
+  suggested_species  Json?    // Array of suggested species
+  created_at         DateTime @default(now())
+
+  @@index([user_id])
+  @@index([created_at])
+  @@map("scan_records")
+}
+
+// Care tasks
+model care_tasks {
+  id               String   @id @default(uuid())
+  user_plant_id   String   @db.VarChar(100)
+  task_type        String   @db.VarChar(20)
+  custom_name      String?  @db.VarChar(100)
+  next_due_at      DateTime
+  last_completed_at DateTime?
+  status           String   @default("pending") @db.VarChar(20)
+  frequency_days   Int?
+  reminder_enabled Boolean  @default(true)
+
+  created_at       DateTime @default(now())
+  updated_at       DateTime @updated_at
+
+  // Relations
+  user_plant       user_plants @relation(fields: [user_plant_id], references: [id], onDelete: Cascade)
+
+  @@index([user_plant_id])
+  @@index([next_due_at])
+  @@index([status])
+  @@map("care_tasks")
+}
+
+// Reminder configurations
+model reminder_configs {
+  id                        String   @id @default(uuid())
+  user_id                   String   @db.VarChar(100) @unique
+  push_enabled              Boolean  @default(true)
+  mini_program_subscription Boolean  @default(false)
+  quiet_hours_start         String?  @db.VarChar(10)
+  quiet_hours_end           String?  @db.VarChar(10)
+
+  created_at                DateTime @default(now())
+  updated_at                DateTime @updated_at
+
+  @@map("reminder_configs")
+}

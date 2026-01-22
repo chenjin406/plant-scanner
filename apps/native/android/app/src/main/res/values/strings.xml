@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="app_name">植物扫描</string>
+  <string name="camera_permission_rationale">需要相机权限来拍摄植物照片</string>
+  <string name="storage_permission_rationale">需要存储权限来保存照片</string>
+</resources>

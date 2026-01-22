@@ -1,0 +1,54 @@
+{
+  "name": "plant-scanner-native",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "android": "react-native run-android",
+    "ios": "react-native run-ios",
+    "start": "react-native start",
+    "lint": "eslint .",
+    "type-check": "tsc --noEmit",
+    "build:android:debug": "cd android && ./gradlew assembleDebug",
+    "build:android:release": "cd android && ./gradlew assembleRelease",
+    "build:ios:debug": "cd ios && xcodebuild -workspace PlantScanner.xcworkspace -scheme PlantScanner -configuration Debug -sdk iphonesimulator build",
+    "build:ios:release": "cd ios && xcodebuild -workspace PlantScanner.xcworkspace -scheme PlantScanner -configuration Release archive"
+  },
+  "dependencies": {
+    "@react-native-async-storage/async-storage": "^1.19.0",
+    "@react-native-community/cli-platform-ios": "^12.0.0",
+    "@react-native-firebase/app": "^18.0.0",
+    "@react-native-firebase/messaging": "^18.0.0",
+    "@react-native-picker/picker": "^2.5.0",
+    "@react-navigation/native": "^6.1.0",
+    "@react-navigation/native-stack": "^6.9.0",
+    "@sentry/react-native": "^5.0.0",
+    "@supabase/supabase-js": "^2.38.0",
+    "react": "18.2.0",
+    "react-native": "0.72.0",
+    "react-native-camera": "^4.2.1",
+    "react-native-config": "^1.5.0",
+    "react-native-fs": "^2.20.0",
+    "react-native-image-picker": "^5.0.0",
+    "react-native-safe-area-context": "^4.7.0",
+    "react-native-screens": "^3.24.0",
+    "react-native-svg": "^13.0.0",
+    "zustand": "^4.4.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.20.0",
+    "@babel/preset-env": "^7.20.0",
+    "@babel/runtime": "^7.20.0",
+    "@react-native/eslint-config": "^0.72.0",
+    "@react-native/metro-config": "^0.72.0",
+    "@types/react": "^18.0.0",
+    "@types/react-native": "^0.72.0",
+    "eslint": "^8.50.0",
+    "metro-react-native-babel-preset": "0.76.0",
+    "prettier": "^3.0.0",
+    "react-test-renderer": "18.2.0",
+    "typescript": "^5.4.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

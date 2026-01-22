@@ -1,0 +1,48 @@
+{
+  "name": "plant-scanner-h5",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Plant Scanner H5 App",
+  "templateInfo": {
+    "name": "default",
+    "typescript": true,
+    "css": "none"
+  },
+  "scripts": {
+    "build:h5": "taro build --type h5",
+    "dev:h5": "npm run build:h5 -- --watch"
+  },
+  "browserslist": [
+    "last 3 versions",
+    "Android >= 4.1",
+    "ios >= 8"
+  ],
+  "dependencies": {
+    "@nutui/nutui-react-taro": "^2.0.0",
+    "@plant-scanner/core": "file:../../packages/core/src",
+    "@plant-scanner/ui": "file:../../packages/ui/src",
+    "@react-native-async-storage/async-storage": "^1.19.0",
+    "@supabase/supabase-js": "^2.38.0",
+    "@tanstack/react-query": "^5.0.0",
+    "@tarojs/components": "3.6.29",
+    "@tarojs/helper": "3.6.29",
+    "@tarojs/plugin-framework-react": "3.6.29",
+    "@tarojs/plugin-platform-h5": "3.6.29",
+    "@tarojs/react": "3.6.29",
+    "@tarojs/runtime": "3.6.29",
+    "@tarojs/shared": "3.6.29",
+    "@tarojs/taro": "3.6.29",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "zustand": "^4.4.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.8.0",
+    "@tarojs/cli": "3.6.29",
+    "@tarojs/webpack5-runner": "3.6.29",
+    "@types/react": "^18.0.0",
+    "@types/webpack-env": "^1.13.6",
+    "babel-preset-taro": "3.6.29",
+    "webpack": "^5.78.0"
+  }
+}

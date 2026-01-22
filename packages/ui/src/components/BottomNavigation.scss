@@ -1,0 +1,136 @@
+.bottom-nav {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  height: 60px;
+  background: #ffffff;
+  border-top: 1px solid #f0f0f0;
+  padding-bottom: env(safe-area-inset-bottom);
+
+  &--float {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: calc(100% - 32px);
+    max-width: 400px;
+    height: 56px;
+    border-radius: 28px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    border: none;
+  }
+
+  &__item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    height: 100%;
+    cursor: pointer;
+    transition: opacity 0.2s;
+
+    &:active {
+      opacity: 0.7;
+    }
+  }
+
+  &__icon {
+    font-size: 22px;
+    margin-bottom: 2px;
+  }
+
+  &__label {
+    font-size: 11px;
+    color: #999;
+    transition: color 0.2s;
+
+    &--active {
+      color: #478575;
+      font-weight: 600;
+    }
+  }
+
+  &__item--active &__icon {
+    transform: scale(1.1);
+  }
+}
+
+.simple-bottom-nav {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  height: 56px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  padding-bottom: env(safe-area-inset-bottom);
+
+  &__item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    height: 100%;
+    cursor: pointer;
+    transition: opacity 0.2s;
+
+    &:active {
+      opacity: 0.7;
+    }
+
+    &--active {
+      .simple-bottom-nav__icon-wrapper {
+        background: #E8F5E9;
+      }
+    }
+  }
+
+  &__icon-wrapper {
+    position: relative;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+  }
+
+  &__icon {
+    font-size: 20px;
+  }
+
+  &__badge {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    min-width: 16px;
+    height: 16px;
+    background: #F44336;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 4px;
+
+    Text {
+      font-size: 10px;
+      color: #ffffff;
+      font-weight: 600;
+    }
+  }
+
+  &__label {
+    font-size: 11px;
+    color: #999;
+    margin-top: 2px;
+    transition: color 0.2s;
+
+    &--active {
+      color: #478575;
+      font-weight: 500;
+    }
+  }
+}

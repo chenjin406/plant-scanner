@@ -1,0 +1,145 @@
+import Taro from '@tarojs/taro';
+import { View, Text, Image, ScrollView, Button } from '@tarojs/components';
+import { useState } from 'react';
+import './result.scss';
+
+interface Suggestion {
+  species_id: string;
+  common_name: string;
+  scientific_name: string;
+  confidence: number;
+}
+
+export default function ResultPage() {
+  const { scan_id } = this.$router.params;
+  const [selectedSuggestion, setSelectedSuggestion] = useState<Suggestion | null>(null);
+
+  // Mock data
+  const mockResult = {
+    image_url: 'https://images.unsplash.com/photo-1459411552884-841db9b3cc2a?w=600',
+    top_suggestion: {
+      species_id: 'uuid-1',
+      common_name: '龟背竹',
+      scientific_name: 'Monstera deliciosa',
+      confidence: 0.92,
+      care_profile: {
+        light_requirement: 'partial_shade',
+        water_frequency_days: 7,
+        difficulty: 'easy'
+      },
+      description: '龟背竹是一种原产于热带美洲的观叶植物，以其独特的裂叶而闻名。'
+    },
+    all_suggestions: [
+      { species_id: 'uuid-1', common_name: '龟背竹', scientific_name: 'Monstera deliciosa', confidence: 0.92 },
+      { species_id: 'uuid-2', common_name: '裂叶龟背竹', scientific_name: 'Monstera adansonii', confidence: 0.05 },
+      { species_id: 'uuid-3', common_name: '琴叶榕', scientific_name: 'Ficus lyrata', confidence: 0.02 }
+    ]
+  };
+
+  const result = mockResult;
+  const suggestion = selectedSuggestion || result.top_suggestion;
+  const confidence = Math.round(suggestion.confidence * 100);
+
+  const handleAddToGarden = () => {
+    Taro.navigateTo({
+      url: `/pages/garden/add/index?species_id=${suggestion.species_id}`
+    });
+  };
+
+  const handleShare = () => {
+    Taro.showShareMenu({ withShareTicket: true });
+  };
+
+  const handleSearchAgain = () => {
+    Taro.navigateBack();
+  };
+
+  return (
+    <ScrollView className="result-page" scrollY>
+      {/* Header Image */}
+      <View className="result__header">
+        <Image src={result.image_url} mode="aspectFill" className="result__image" />
+        <View className="result__back" onClick={() => Taro.navigateBack()}>
+          <Text>← 返回</Text>
+        </View>
+        <View className="result__share" onClick={handleShare}>
+          <Text>📤</Text>
+        </View>
+      </View>
+
+      {/* Plant Info */}
+      <View className="result__content">
+        <View className="result__info">
+          <Text className="result__common-name">{suggestion.common_name}</Text>
+          <Text className="result__scientific-name">{suggestion.scientific_name}</Text>
+
+          {/* Confidence */}
+          <View className="result__confidence">
+            <View className="result__confidence-bar">
+              <View className="result__confidence-fill" style={{ width: `${confidence}%` }}></View>
+            </View>
+            <Text className="result__confidence-text">匹配度 {confidence}%</Text>
+          </View>
+
+          {/* Care Tags */}
+          <View className="result__care-tags">
+            <View className="result__tag">
+              <Text>☀️</Text>
+              <Text>半阴</Text>
+            </View>
+            <View className="result__tag">
+              <Text>💧</Text>
+              <Text>7天/次</Text>
+            </View>
+            <View className="result__tag">
+              <Text>🌱</Text>
+              <Text>简单</Text>
+            </View>
+          </View>
+        </View>
+
+        {/* Description */}
+        <View className="result__section">
+          <Text className="result__section-title">植物简介</Text>
+          <Text className="result__description">{suggestion.description}</Text>
+        </View>
+
+        {/* Other Suggestions */}
+        {result.all_suggestions.length > 1 && (
+          <View className="result__section">
+            <Text className="result__section-title">其他可能</Text>
+            {result.all_suggestions.slice(1).map((s, index) => (
+              <View
+                key={s.species_id}
+                className={`result__suggestion ${selectedSuggestion?.species_id === s.species_id ? 'result__suggestion--active' : ''}`}
+                onClick={() => setSelectedSuggestion(s)}
+              >
+                <Text className="result__suggestion-rank">{index + 2}</Text>
+                <View className="result__suggestion-info">
+                  <Text className="result__suggestion-name">{s.common_name}</Text>
+                  <Text className="result__suggestion-scientific">{s.scientific_name}</Text>
+                </View>
+                <Text className="result__suggestion-confidence">{Math.round(s.confidence * 100)}%</Text>
+              </View>
+            ))}
+          </View>
+        )}
+
+        {/* Not This Plant */}
+        <View className="result__not-this" onClick={handleSearchAgain}>
+          <Text>不是 {suggestion.common_name}？</Text>
+          <Text className="result__not-this-link">手动搜索</Text>
+        </View>
+
+        {/* Add to Garden Button */}
+        <Button className="result__btn" onClick={handleAddToGarden}>
+          加入我的花园
+        </Button>
+      </View>
+    </ScrollView>
+  );
+}
+
+ResultPage.config = definePageConfig({
+  navigationBarTitleText: '识别结果'
+});

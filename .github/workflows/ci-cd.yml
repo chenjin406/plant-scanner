@@ -1,0 +1,186 @@
+name: Plant Scanner CI/CD
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+    branches: [main]
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run ESLint
+        run: npm run lint
+
+      - name: Run Prettier check
+        run: npm run format -- --check
+
+  type-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type check core package
+        run: npm run build --workspace=@plant-scanner/core
+
+      - name: Type check UI package
+        run: npm run build --workspace=@plant-scanner/ui
+
+  build-h5:
+    runs-on: ubuntu-latest
+    needs: [lint, type-check]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build H5
+        run: npm run build:h5
+        working-directory: apps/h5
+
+      - name: Upload H5 build
+        uses: actions/upload-artifact@v4
+        with:
+          name: h5-build
+          path: apps/h5/dist/
+          retention-days: 7
+
+  build-weapp:
+    runs-on: ubuntu-latest
+    needs: [lint, type-check]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build WeChat Mini Program
+        run: npm run build:weapp
+        working-directory: apps/miniapp
+
+      - name: Upload WeApp build
+        uses: actions/upload-artifact@v4
+        with:
+          name: weapp-build
+          path: apps/miniapp/dist/
+          retention-days: 7
+
+  build-alipay:
+    runs-on: ubuntu-latest
+    needs: [lint, type-check]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build Alipay Mini Program
+        run: npm run build:alipay
+        working-directory: apps/miniapp
+
+      - name: Upload Alipay build
+        uses: actions/upload-artifact@v4
+        with:
+          name: alipay-build
+          path: apps/miniapp/dist/alipay/
+          retention-days: 7
+
+  deploy-h5:
+    runs-on: ubuntu-latest
+    needs: build-h5
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download H5 build
+        uses: actions/download-artifact@v4
+        with:
+          name: h5-build
+          path: apps/h5/dist/
+
+      - name: Deploy to Vercel
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          vercel-args: '--prod'
+          working-directory: apps/h5
+
+  deploy-weapp:
+    runs-on: ubuntu-latest
+    needs: build-weapp
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download WeApp build
+        uses: actions/download-artifact@v4
+        with:
+          name: weapp-build
+          path: apps/miniapp/dist/
+
+      - name: Deploy to WeChat Mini Program
+        uses: crossverse/action-wechat-miniprogram@v1
+        with:
+          appid: ${{ secrets.WEAPP_APPID }}
+          private-key: ${{ secrets.WEAPP_PRIVATE_KEY }}
+          version: ${{ github.sha }}
+          desc: 'Automated deployment from GitHub Actions'
+
+  notify:
+    runs-on: ubuntu-latest
+    needs: [deploy-h5, deploy-weapp]
+    if: always()
+    steps:
+      - name: Send notification
+        run: |
+          if [ "${{ needs.deploy-h5.result }}" == "success" ] && [ "${{ needs.deploy-weapp.result }}" == "success" ]; then
+            echo "✅ Deployment successful!"
+          else
+            echo "❌ Deployment failed!"
+            exit 1
+          fi
