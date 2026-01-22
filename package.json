@@ -8,16 +8,13 @@
     "dev:weapp": "cd apps/miniapp && npm run dev:weapp",
     "dev:alipay": "cd apps/miniapp && npm run dev:alipay",
     "install:h5": "cd apps/h5 && npm install --legacy-peer-deps",
-    "build:h5": "NODE_ENV=production npm run install:h5 && cd apps/h5 && npm run build:h5",
+    "build:h5": "npm run install:h5 && cd apps/h5 && npm run build:h5",
     "build:weapp": "cd apps/miniapp && npm run build:weapp",
     "build:alipay": "cd apps/miniapp && npm run build:alipay",
     "lint": "eslint \"apps/**/*.ts\" \"apps/**/*.tsx\" \"packages/**/*.ts\" \"packages/**/*.tsx\"",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
     "data-sync": "node scripts/data-sync/index.js"
   },
-  "workspaces": [
-    "packages/*"
-  ],
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",
@@ -36,7 +33,10 @@
     "@babel/core": "^7.26.0",
     "@babel/preset-react": "^7.28.5",
     "@babel/preset-typescript": "^7.28.5",
+    "@nutui/nutui-react-taro": "^2.0.0",
+    "@supabase/supabase-js": "^2.38.0",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "zustand": "^4.4.0"
   }
 }
