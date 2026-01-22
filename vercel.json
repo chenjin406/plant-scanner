@@ -1,52 +1,50 @@
 {
-  "name": "plant-scanner",
   "version": 2,
-  "builds": [
+  "framework": null,
+  "buildCommand": "npm run build:h5",
+  "outputDirectory": "apps/h5/dist",
+  "installCommand": "npm install --legacy-peer-deps",
+  "headers": [
     {
-      "src": "apps/h5/dist/**",
-      "use": "@vercel/static"
+      "source": "/api/(.*)",
+      "headers": [
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        },
+        {
+          "key": "Access-Control-Allow-Methods",
+          "value": "GET, POST, PUT, DELETE, OPTIONS"
+        },
+        {
+          "key": "Access-Control-Allow-Headers",
+          "value": "Content-Type, Authorization"
+        }
+      ]
     },
     {
-      "src": "api/**/*.ts",
-      "use": "@vercel/node"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/api/(.*)",
-      "headers": {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type, Authorization"
-      }
+      "source": "/static/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
     },
     {
-      "src": "/static/(.*)",
-      "headers": {
-        "Cache-Control": "public, max-age=31536000, immutable"
-      }
-    },
-    {
-      "src": "/(.*)",
-      "headers": {
-        "Cache-Control": "no-cache, no-store, must-revalidate"
-      }
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, no-store, must-revalidate"
+        }
+      ]
     }
   ],
   "rewrites": [
     {
-      "source": "/((?!api|static).*)",
-      "destination": "/apps/h5/dist/index.html"
+      "source": "/((?!api).*)",
+      "destination": "/index.html"
     }
-  ],
-  "env": {
-    "NEXT_PUBLIC_SUPABASE_URL": "@supabase-url",
-    "NEXT_PUBLIC_SUPABASE_ANON_KEY": "@supabase-anon-key",
-    "NEXT_PUBLIC_SENTRY_DSN": "@sentry-dsn",
-    "SUPABASE_SERVICE_KEY": "@supabase-service-key",
-    "PLANTNET_API_KEY": "@plantnet-api-key",
-    "SENTRY_DSN": "@sentry-dsn"
-  },
-  "regions": ["iad1", "sfo1", "sin1"],
-  "framework": "taro"
+  ]
 }

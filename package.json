@@ -7,7 +7,8 @@
     "dev:h5": "cd apps/h5 && npm run dev:h5",
     "dev:weapp": "cd apps/miniapp && npm run dev:weapp",
     "dev:alipay": "cd apps/miniapp && npm run dev:alipay",
-    "build:h5": "cd apps/h5 && npm run build:h5",
+    "install:h5": "cd apps/h5 && npm install --legacy-peer-deps",
+    "build:h5": "NODE_ENV=production npm run install:h5 && cd apps/h5 && npm run build:h5",
     "build:weapp": "cd apps/miniapp && npm run build:weapp",
     "build:alipay": "cd apps/miniapp && npm run build:alipay",
     "lint": "eslint \"apps/**/*.ts\" \"apps/**/*.tsx\" \"packages/**/*.ts\" \"packages/**/*.tsx\"",
@@ -34,6 +35,8 @@
   "dependencies": {
     "@babel/core": "^7.26.0",
     "@babel/preset-react": "^7.28.5",
-    "@babel/preset-typescript": "^7.28.5"
+    "@babel/preset-typescript": "^7.28.5",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
   }
 }

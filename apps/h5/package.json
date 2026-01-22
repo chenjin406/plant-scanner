@@ -19,8 +19,8 @@
   ],
   "dependencies": {
     "@nutui/nutui-react-taro": "^2.0.0",
-    "@plant-scanner/core": "file:../../packages/core/src",
-    "@plant-scanner/ui": "file:../../packages/ui/src",
+    "@plant-scanner/core": "*",
+    "@plant-scanner/ui": "*",
     "@react-native-async-storage/async-storage": "^1.19.0",
     "@supabase/supabase-js": "^2.38.0",
     "@tanstack/react-query": "^5.0.0",
@@ -38,6 +38,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.8.0",
+    "@babel/preset-typescript": "^7.28.5",
     "@tarojs/cli": "3.6.29",
     "@tarojs/webpack5-runner": "3.6.29",
     "@types/react": "^18.0.0",
