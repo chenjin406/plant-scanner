@@ -1,8 +1,20 @@
-import { definePageConfig } from '@tarojs/taro';
+import Taro, { definePageConfig } from '@tarojs/taro';
 import { View, Text, Image, ScrollView } from '@tarojs/components';
 import './index.scss';
 
 export default function Index() {
+  const handleNavigate = (url?: string) => {
+    if (url) {
+      Taro.navigateTo({ url });
+      return;
+    }
+
+    Taro.showToast({
+      title: '功能开发中',
+      icon: 'none'
+    });
+  };
+
   const tasks = [
     {
       id: '1',
@@ -119,21 +131,24 @@ export default function Index() {
           <Text className="home-page__nav-icon">🏠</Text>
           <Text className="home-page__nav-text">首页</Text>
         </View>
-        <View className="home-page__nav-item">
+        <View
+          className="home-page__nav-item"
+          onClick={() => handleNavigate('/pages/garden/garden')}
+        >
           <Text className="home-page__nav-icon">🌿</Text>
           <Text className="home-page__nav-text">我的花园</Text>
         </View>
         <View className="home-page__nav-gap"></View>
-        <View className="home-page__nav-item">
+        <View className="home-page__nav-item" onClick={() => handleNavigate()}>
           <Text className="home-page__nav-icon">👥</Text>
           <Text className="home-page__nav-text">社区</Text>
         </View>
-        <View className="home-page__nav-item">
+        <View className="home-page__nav-item" onClick={() => handleNavigate()}>
           <Text className="home-page__nav-icon">⚙️</Text>
           <Text className="home-page__nav-text">设置</Text>
         </View>
       </View>
-      <View className="home-page__fab">
+      <View className="home-page__fab" onClick={() => handleNavigate('/pages/camera/camera')}>
         <Text className="home-page__fab-icon">📷</Text>
       </View>
     </View>

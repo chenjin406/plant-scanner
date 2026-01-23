@@ -32,7 +32,7 @@ interface PlantData {
   care_profile: CareProfile;
   tasks: Array<{
     id: string;
-    type: string;
+    type: 'water' | 'fertilize' | 'repot' | 'prune' | 'custom';
     plant_name: string;
     due_at: string;
     is_completed: boolean;
@@ -106,19 +106,22 @@ export default function CareGuidePage() {
 
   return (
     <View className="care-guide-page">
-      {/* Header with image */}
+      <View className="care-guide__topbar">
+        <View className="care-guide__back" onClick={() => Taro.navigateBack()}>
+          <Text>←</Text>
+        </View>
+        <Text className="care-guide__title">养护指南</Text>
+        <View className="care-guide__share" onClick={handleShare}>
+          <Text>📤</Text>
+        </View>
+      </View>
+
       <View className="care-guide__header">
         <Image
           src={plant.image_url}
           mode="aspectFill"
           className="care-guide__image"
         />
-        <View className="care-guide__back" onClick={() => Taro.navigateBack()}>
-          <Text>← 返回</Text>
-        </View>
-        <View className="care-guide__share" onClick={handleShare}>
-          <Text>📤</Text>
-        </View>
         <View className="care-guide__gradient"></View>
         <View className="care-guide__plant-info">
           <Text className="care-guide__nickname">{plant.nickname}</Text>

@@ -1,7 +1,6 @@
-import Taro, { useDidMount } from '@tarojs/taro';
+import Taro from '@tarojs/taro';
 import { View, Text, Image, Button, ScrollView } from '@tarojs/components';
 import { useState, useEffect } from 'react';
-import { useQuery } from '@tanstack/react-query';
 import { CareTag } from '@plant-scanner/ui';
 import './result.scss';
 
@@ -26,7 +25,19 @@ export default function ResultPage() {
   const [selectedSuggestion, setSelectedSuggestion] = useState<Suggestion | null>(null);
   const [showFullDescription, setShowFullDescription] = useState(false);
 
-  const { scan_id } = this.$router.params;
+  const handleNavigate = (url?: string) => {
+    if (url) {
+      Taro.navigateTo({ url });
+      return;
+    }
+
+    Taro.showToast({
+      title: '功能开发中',
+      icon: 'none'
+    });
+  };
+
+  const { scan_id } = Taro.getCurrentInstance().router?.params || {};
 
   // Mock data for demo (would come from API in real implementation)
   const mockResult: ResultData = {
@@ -88,10 +99,7 @@ export default function ResultPage() {
       content: '确定要将此植物加入花园吗？',
       success: (res) => {
         if (res.confirm) {
-          // Navigate to add garden flow
-          Taro.navigateTo({
-            url: `/pages/garden/add?species_id=${selectedSuggestion?.species_id}`
-          });
+          handleNavigate('/pages/garden/garden');
         }
       }
     });
@@ -104,7 +112,7 @@ export default function ResultPage() {
   };
 
   const handleSearchAgain = () => {
-    Taro.navigateBack();
+    handleNavigate('/pages/search/search');
   };
 
   const confidencePercent = Math.round((selectedSuggestion?.confidence || 0) * 100);
@@ -112,31 +120,29 @@ export default function ResultPage() {
 
   return (
     <View className="result-page">
-      {/* Header with image */}
-      <View className="result__header">
-        <Image
-          src={result.image_url}
-          mode="aspectFill"
-          className="result__image"
-        />
+      <View className="result__topbar">
         <View className="result__back" onClick={() => Taro.navigateBack()}>
-          <Text>← 返回</Text>
+          <Text>←</Text>
         </View>
+        <Text className="result__title">识别结果</Text>
         <View className="result__share" onClick={handleShare}>
           <Text>📤</Text>
         </View>
       </View>
 
-      {/* Main content */}
       <ScrollView className="result__content" scrollY>
-        {/* Plant name and confidence */}
-        <View className="result__plant-info">
-          <View className="result__names">
-            <Text className="result__common-name">{selectedSuggestion?.common_name}</Text>
-            <Text className="result__scientific-name">{selectedSuggestion?.scientific_name}</Text>
-          </View>
+        <View className="result__hero">
+          <Image
+            src={result.image_url}
+            mode="aspectFill"
+            className="result__hero-image"
+          />
+          <View className="result__hero-overlay"></View>
+        </View>
 
-          {/* Match confidence */}
+        <View className="result__summary">
+          <Text className="result__common-name">{selectedSuggestion?.common_name}</Text>
+          <Text className="result__scientific-name">{selectedSuggestion?.scientific_name}</Text>
           <View className="result__confidence">
             <View className="result__confidence-bar">
               <View
@@ -144,9 +150,7 @@ export default function ResultPage() {
                 style={{ width: `${confidencePercent}%` }}
               ></View>
             </View>
-            <Text className="result__confidence-text">
-              匹配度 {confidencePercent}%
-            </Text>
+            <Text className="result__confidence-text">{confidencePercent}% 匹配</Text>
           </View>
         </View>
 

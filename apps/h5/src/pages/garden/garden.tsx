@@ -1,7 +1,6 @@
 import Taro from '@tarojs/taro';
-import { View, Text, Image, Input } from '@tarojs/components';
+import { View, Text, Image, Input, ScrollView } from '@tarojs/components';
 import { useState } from 'react';
-import { PlantCard, SimpleBottomNav, EmptyState, GardenEmptyState } from '@plant-scanner/ui';
 import './garden.scss';
 
 type FilterType = 'all' | 'indoor' | 'outdoor' | 'needs_water';
@@ -53,14 +52,17 @@ export default function GardenPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [plants] = useState<Plant[]>(mockPlants);
 
-  const navItems = [
-    { key: 'home', label: '首页', icon: '🏠' },
-    { key: 'camera', label: '识别', icon: '📷' },
-    { key: 'garden', label: '花园', icon: '🌿' },
-    { key: 'guide', label: '百科', icon: '📖' },
-    { key: 'settings', label: '设置', icon: '⚙️' }
-  ];
-  const [activeNav, setActiveNav] = useState('garden');
+  const handleNavigate = (url?: string) => {
+    if (url) {
+      Taro.navigateTo({ url });
+      return;
+    }
+
+    Taro.showToast({
+      title: '功能开发中',
+      icon: 'none'
+    });
+  };
 
   const filteredPlants = plants.filter(plant => {
     // Apply filter
@@ -84,109 +86,114 @@ export default function GardenPage() {
 
   const handlePlantClick = (plantId: string) => {
     Taro.navigateTo({
-      url: `/pages/care-guide/index?plant_id=${plantId}`
+      url: `/pages/care-guide/care-guide?plant_id=${plantId}`
     });
   };
 
   const handleAddPlant = () => {
     Taro.navigateTo({
-      url: '/pages/camera/index'
+      url: '/pages/camera/camera'
     });
   };
 
   return (
     <View className="garden-page">
-      {/* Header */}
-      <View className="garden__header">
-        <View className="garden__title-area">
+      <ScrollView className="garden-page__content" scrollY>
+        <View className="garden__topbar">
+          <Text className="garden__icon">☰</Text>
           <Text className="garden__title">我的花园</Text>
-          <Text className="garden__subtitle">{plants.length} 株植物</Text>
+          <View className="garden__avatar">👤</View>
         </View>
-      </View>
 
-      {/* Search and filter */}
-      <View className="garden__search-area">
-        <View className="garden__search">
-          <Text className="garden__search-icon">🔍</Text>
-          <Input
-            className="garden__search-input"
-            placeholder="搜索植物..."
-            value={searchQuery}
-            onInput={(e) => setSearchQuery(e.detail.value)}
-          />
+        <View className="garden__search-area">
+          <View className="garden__search">
+            <Text className="garden__search-icon">🔍</Text>
+            <Input
+              className="garden__search-input"
+              placeholder="搜索我的植物"
+              value={searchQuery}
+              onInput={(e) => setSearchQuery(e.detail.value)}
+            />
+          </View>
         </View>
 
         <View className="garden__filters">
-          {(['all', 'indoor', 'outdoor', 'needs_water'] as FilterType[]).map(f => (
+          {(['all', 'indoor', 'outdoor', 'needs_water'] as FilterType[]).map((f) => (
             <View
               key={f}
               className={`garden__filter ${filter === f ? 'garden__filter--active' : ''}`}
               onClick={() => setFilter(f)}
             >
               <Text className="garden__filter-text">
-                {f === 'all' ? '全部' : f === 'indoor' ? '室内' : f === 'outdoor' ? '室外' : '需浇水'}
+                {f === 'all' ? '全部' : f === 'indoor' ? '室内' : f === 'outdoor' ? '室外' : '待浇水'}
               </Text>
             </View>
           ))}
         </View>
-      </View>
 
-      {/* Priority care section */}
-      {priorityPlants.length > 0 && filter === 'all' && (
-        <View className="garden__priority">
-          <View className="garden__priority-header">
-            <Text className="garden__priority-title">🔔 优先护理</Text>
-            <Text className="garden__priority-count">{priorityPlants.length} 株需要关注</Text>
-          </View>
-          <View className="garden__priority-list">
-            {priorityPlants.slice(0, 3).map(plant => (
-              <View key={plant.id} className="garden__priority-plant" onClick={() => handlePlantClick(plant.id)}>
+        {priorityPlants.length > 0 && filter === 'all' && (
+          <View className="garden__priority">
+            <View className="garden__priority-header">
+              <View>
+                <Text className="garden__priority-label">优先护理</Text>
+                <Text className="garden__priority-title">{priorityPlants.length} 株植物待浇水</Text>
+              </View>
+              <View className="garden__priority-icon">💧</View>
+            </View>
+            <View className="garden__priority-avatars">
+              {priorityPlants.slice(0, 3).map((plant) => (
                 <Image
+                  key={plant.id}
                   src={plant.image_url || ''}
                   mode="aspectFill"
-                  className="garden__priority-thumb"
+                  className="garden__priority-avatar"
                 />
-                <View className="garden__priority-info">
-                  <Text className="garden__priority-name">{plant.nickname}</Text>
-                  <Text className="garden__priority-task">需要{plant.next_task?.type === 'water' ? '浇水' : '护理'}</Text>
-                </View>
-              </View>
-            ))}
-          </View>
-        </View>
-      )}
-
-      {/* Plant grid */}
-      <View className="garden__plants">
-        {filteredPlants.length > 0 ? (
-          <View className="garden__plant-grid">
-            {filteredPlants.map(plant => (
-              <PlantCard
-                key={plant.id}
-                plant={plant}
-                onClick={() => handlePlantClick(plant.id)}
-              />
-            ))}
-          </View>
-        ) : (
-          <View className="garden__empty">
-            <GardenEmptyState onAddPlant={handleAddPlant} />
+              ))}
+            </View>
           </View>
         )}
-      </View>
 
-      {/* Add button */}
+        <View className="garden__grid">
+          {filteredPlants.map((plant) => (
+            <View key={plant.id} className="garden__card" onClick={() => handlePlantClick(plant.id)}>
+              <View className="garden__card-image">
+                <Image src={plant.image_url || ''} mode="aspectFill" className="garden__card-photo" />
+                {plant.status === 'needs_attention' && (
+                  <View className="garden__card-badge">💧</View>
+                )}
+              </View>
+              <View className="garden__card-body">
+                <Text className="garden__card-name">{plant.nickname}</Text>
+                <Text className="garden__card-species">{plant.species_name || ''}</Text>
+              </View>
+            </View>
+          ))}
+        </View>
+
+        <View className="garden__spacer"></View>
+      </ScrollView>
+
+      <View className="garden__nav">
+        <View className="garden__nav-item" onClick={() => handleNavigate('/pages/index/index')}>
+          <Text className="garden__nav-icon">🏠</Text>
+          <Text className="garden__nav-text">首页</Text>
+        </View>
+        <View className="garden__nav-item garden__nav-item--active">
+          <Text className="garden__nav-icon">🌿</Text>
+          <Text className="garden__nav-text">我的花园</Text>
+        </View>
+        <View className="garden__nav-gap"></View>
+        <View className="garden__nav-item" onClick={() => handleNavigate()}>
+          <Text className="garden__nav-icon">👥</Text>
+          <Text className="garden__nav-text">社区</Text>
+        </View>
+        <View className="garden__nav-item" onClick={() => handleNavigate()}>
+          <Text className="garden__nav-icon">⚙️</Text>
+          <Text className="garden__nav-text">设置</Text>
+        </View>
+      </View>
       <View className="garden__fab" onClick={handleAddPlant}>
         <Text className="garden__fab-icon">+</Text>
-      </View>
-
-      {/* Bottom navigation */}
-      <View className="garden__nav">
-        <SimpleBottomNav
-          items={navItems}
-          activeKey={activeNav}
-          onChange={setActiveNav}
-        />
       </View>
     </View>
   );

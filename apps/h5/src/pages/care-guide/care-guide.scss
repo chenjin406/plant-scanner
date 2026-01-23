@@ -6,6 +6,19 @@
 }
 
 .care-guide {
+  &__topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 16px 8px;
+  }
+
+  &__title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1b1f1e;
+  }
+
   &__header {
     position: relative;
     height: 280px;
@@ -18,28 +31,22 @@
 
   &__back,
   &__share {
-    position: absolute;
-    top: 50px;
-    padding: 10px 14px;
+    width: 40px;
+    height: 40px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     background: rgba(255, 255, 255, 0.9);
     backdrop-filter: blur(10px);
-    border-radius: 18px;
-    font-size: 13px;
-    color: #333;
-    z-index: 10;
+    border: 1px solid #e6ebea;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
+    font-size: 16px;
+    color: #1b1f1e;
 
     &:active {
       opacity: 0.7;
     }
-  }
-
-  &__back {
-    left: 16px;
-  }
-
-  &__share {
-    right: 16px;
-    font-size: 16px;
   }
 
   &__gradient {
