@@ -15,7 +15,7 @@
   }
 
   &__title {
-    font-size: 24px;
+    font-size: 20px;
     font-weight: 700;
     display: block;
   }
@@ -73,8 +73,9 @@
   }
 
   &__content {
-    height: calc(100vh - 160px);
+    height: calc(100vh - 160px - 56px - env(safe-area-inset-bottom));
     padding: 0 16px;
+    padding-bottom: calc(16px + env(safe-area-inset-bottom));
   }
 
   &__loading {
@@ -128,7 +129,7 @@
   }
 
   &__result-name {
-    font-size: 16px;
+    font-size: 14px;
     font-weight: 600;
     color: #333;
     margin-bottom: 4px;

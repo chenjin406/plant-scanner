@@ -12,7 +12,12 @@ const config = {
   sourceRoot: 'src',
   outputRoot: 'dist',
   plugins: ['@tarojs/plugin-framework-react'],
-  defineConstants: {},
+  defineConstants: {
+    'process.env.SUPABASE_URL': JSON.stringify(process.env.SUPABASE_URL || ''),
+    'process.env.SUPABASE_ANON_KEY': JSON.stringify(process.env.SUPABASE_ANON_KEY || ''),
+    'process.env.NEXT_PUBLIC_SUPABASE_URL': JSON.stringify(process.env.NEXT_PUBLIC_SUPABASE_URL || ''),
+    'process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY': JSON.stringify(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''),
+  },
   copy: {
     patterns: [],
     options: {}
@@ -43,6 +48,14 @@ const config = {
     },
     webpackChain(chain) {
       chain.resolve.alias.set('@', path.resolve(__dirname, '..', 'src'));
+
+      // Force single React instance from root node_modules
+      const rootNodeModules = path.resolve(__dirname, '..', '..', '..', 'node_modules');
+      chain.resolve.alias
+        .set('react', path.join(rootNodeModules, 'react'))
+        .set('react-dom', path.join(rootNodeModules, 'react-dom'))
+        .set('@tanstack/react-query', path.join(rootNodeModules, '@tanstack/react-query'));
+
       chain.module.rule('tsx').exclude.add(path.resolve(__dirname, '..', 'src/pages/auth/auth.tsx'));
     }
   },

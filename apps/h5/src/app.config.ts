@@ -15,30 +15,6 @@ export default definePageConfig({
     navigationBarTextStyle: 'white',
     backgroundColor: '#f5f5f5',
   },
-  tabBar: {
-    color: '#999999',
-    selectedColor: '#4CAF50',
-    backgroundColor: '#ffffff',
-    borderStyle: 'black',
-    list: [
-      {
-        pagePath: 'pages/index/index',
-        text: '首页',
-      },
-      {
-        pagePath: 'pages/garden/garden',
-        text: '花园',
-      },
-      {
-        pagePath: 'pages/search/search',
-        text: '搜索',
-      },
-      {
-        pagePath: 'pages/auth/auth',
-        text: '我的',
-      },
-    ],
-  },
   networkTimeout: {
     request: 10000,
     connectSocket: 10000,

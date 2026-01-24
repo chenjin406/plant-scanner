@@ -1,4 +1,3 @@
-import Taro from '@tarojs/taro';
 import { View, Text } from '@tarojs/components';
 import './BottomNavigation.scss';
 
@@ -27,7 +26,6 @@ const defaultIcons: Record<string, { inactive: string; active: string }> = {
 export function BottomNavigation({ items, activeKey, onChange, isFloat = false }: BottomNavigationProps) {
   const handleClick = (key: string) => {
     onChange(key);
-    Taro.switchTab({ url: `/pages/${key}/index` });
   };
 
   return (

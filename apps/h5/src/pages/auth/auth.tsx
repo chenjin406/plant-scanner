@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useAuthStore } from '@plant-scanner/core';
 import './auth.scss';
 
-type AuthMode = 'login' | 'register' | 'verify';
+type AuthMode = 'login' | 'register' | 'verify' | 'set-password';
 
 export default function AuthPage() {
   const [mode, setMode] = useState<AuthMode>('login');
@@ -78,7 +78,7 @@ export default function AuthPage() {
           // Login successful
           Taro.setStorageSync('userId', response.data.data.user.id);
           Taro.setStorageSync('token', response.data.data.session.access_token);
-          Taro.switchTab({ url: '/pages/index/index' });
+          Taro.reLaunch({ url: '/pages/index/index' });
         }
       } else {
         Taro.showToast({ title: response.data.error || '验证失败', icon: 'none' });
@@ -112,7 +112,7 @@ export default function AuthPage() {
       if (response.statusCode === 200 && response.data.success) {
         Taro.setStorageSync('userId', response.data.data.user.id);
         Taro.setStorageSync('token', response.data.data.session.access_token);
-        Taro.switchTab({ url: '/pages/index/index' });
+        Taro.reLaunch({ url: '/pages/index/index' });
       } else {
         Taro.showToast({ title: response.data.error || '注册失败', icon: 'none' });
       }

@@ -1,41 +1,31 @@
 import Taro from '@tarojs/taro';
 import { View, Text, Image, Input, ScrollView } from '@tarojs/components';
 import { useState } from 'react';
+import { usePlants } from '@plant-scanner/core';
 import './garden.scss';
 
 type FilterType = 'all' | 'indoor' | 'outdoor' | 'needs_water';
-
-interface Plant {
-  id: string;
-  nickname: string;
-  species_name?: string;
-  status: string;
-  location_type: 'indoor' | 'outdoor';
-  image_url?: string;
-}
-
-const mockPlants: Plant[] = [
-  { id: '1', nickname: '小绿', species_name: '龟背竹', status: 'healthy', location_type: 'indoor', image_url: 'https://images.unsplash.com/photo-1614594975525-e45190c55d0b?w=200' },
-  { id: '2', nickname: '肉肉', species_name: '多肉', status: 'needs_attention', location_type: 'indoor', image_url: 'https://images.unsplash.com/photo-1466692476868-aef1dfb1e735?w=200' },
-  { id: '3', nickname: '阳光', species_name: '绿萝', status: 'healthy', location_type: 'outdoor', image_url: 'https://images.unsplash.com/photo-1596724852267-1a8340e73258?w=200' }
-];
 
 export default function GardenPage() {
   const [filter, setFilter] = useState<FilterType>('all');
   const [searchQuery, setSearchQuery] = useState('');
 
-  const filteredPlants = mockPlants.filter(plant => {
+  const userId = '00000000-0000-0000-0000-000000000001'; // TODO: Get from auth store
+  const { data: plantsResponse, isLoading } = usePlants(userId);
+  const plants = plantsResponse?.data || [];
+
+  const filteredPlants = plants.filter((plant: any) => {
     if (filter === 'indoor' && plant.location_type !== 'indoor') return false;
     if (filter === 'outdoor' && plant.location_type !== 'outdoor') return false;
     if (filter === 'needs_water' && plant.status !== 'needs_attention') return false;
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
-      return plant.nickname.toLowerCase().includes(query) || plant.species_name?.toLowerCase().includes(query);
+      return plant.nickname.toLowerCase().includes(query) || plant.species?.common_name?.toLowerCase().includes(query);
     }
     return true;
   });
 
-  const priorityPlants = mockPlants.filter(p => p.status === 'needs_attention');
+  const priorityPlants = plants.filter((p: any) => p.status === 'needs_attention');
 
   const handlePlantClick = (plantId: string) => {
     Taro.navigateTo({

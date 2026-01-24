@@ -1,7 +1,7 @@
 .garden-page {
   min-height: 100vh;
   background: #f6f7f7;
-  padding-bottom: 96px;
+  padding-bottom: calc(96px + env(safe-area-inset-bottom));
 }
 
 .garden-page__content {
@@ -17,12 +17,12 @@
   }
 
   &__icon {
-    font-size: 20px;
-    color: #1b1f1e;
+    width: 24px;
+    height: 24px;
   }
 
   &__title {
-    font-size: 18px;
+    font-size: 16px;
     font-weight: 700;
     color: #1b1f1e;
   }
@@ -118,7 +118,7 @@
   }
 
   &__priority-title {
-    font-size: 16px;
+    font-size: 14px;
     font-weight: 700;
     color: #1b1f1e;
     margin-top: 4px;
@@ -195,7 +195,7 @@
   }
 
   &__card-name {
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 700;
     color: #1b1f1e;
   }
@@ -218,7 +218,7 @@
     bottom: 0;
     background: rgba(255, 255, 255, 0.95);
     border-top: 1px solid #e6ebea;
-    padding: 10px 20px 20px;
+    padding: 10px 20px calc(20px + env(safe-area-inset-bottom));
     display: flex;
     justify-content: space-between;
     align-items: flex-end;
@@ -248,7 +248,7 @@
 
   &__fab {
     position: fixed;
-    bottom: 38px;
+    bottom: calc(76px + env(safe-area-inset-bottom));
     right: 20px;
     width: 46px;
     height: 46px;

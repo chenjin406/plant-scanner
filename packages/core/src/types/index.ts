@@ -147,6 +147,8 @@ export interface IdentificationResult {
   care_profile?: CareProfile;
   description?: string;
   image_url?: string;
+  confidence?: number;
+  threshold_met?: boolean;
 }
 
 // Garden statistics

@@ -2,7 +2,7 @@
   min-height: 100vh;
   background: #f6f7f7;
   position: relative;
-  padding-bottom: 88px;
+  padding-bottom: calc(88px + env(safe-area-inset-bottom));
 }
 
 .home-page__content {
@@ -14,28 +14,35 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 16px;
+  width: 100%;
+  overflow: hidden;
 }
 
 .home-page__greeting {
-  font-size: 22px;
+  font-size: 18px;
   font-weight: 700;
   color: #1b1f1e;
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-right: 12px;
 }
 
 .home-page__meta {
   display: flex;
   align-items: center;
   gap: 6px;
-  margin-top: 6px;
+  margin-top: 4px;
 }
 
 .home-page__meta-dot {
   color: #478575;
-  font-size: 12px;
+  font-size: 10px;
 }
 
 .home-page__meta-text {
-  font-size: 12px;
+  font-size: 11px;
   color: #6e7c79;
 }
 
@@ -83,7 +90,7 @@
 }
 
 .home-page__reminder-title {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
   color: #3a6a5d;
 }
@@ -111,7 +118,7 @@
 }
 
 .home-page__section-title {
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 700;
   color: #1b1f1e;
 }
@@ -129,16 +136,22 @@
 
 .home-page__tasks-row {
   display: flex;
-  gap: 14px;
+  gap: 12px;
   padding-bottom: 6px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  &::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 .home-page__task-card {
-  min-width: 140px;
+  min-width: 120px;
+  flex-shrink: 0;
   background: #fff;
-  border-radius: 18px;
+  border-radius: 16px;
   padding: 10px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
   position: relative;
 }
 
@@ -210,7 +223,7 @@
 }
 
 .home-page__recommend-title {
-  font-size: 22px;
+  font-size: 18px;
   font-weight: 700;
   margin: 4px 0;
 }
@@ -295,7 +308,7 @@
   bottom: 0;
   background: rgba(255, 255, 255, 0.95);
   border-top: 1px solid #e6ebea;
-  padding: 10px 20px 20px;
+  padding: 10px 20px calc(20px + env(safe-area-inset-bottom));
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
@@ -325,7 +338,7 @@
 
 .home-page__fab {
   position: fixed;
-  bottom: 36px;
+  bottom: calc(76px + env(safe-area-inset-bottom));
   left: 50%;
   transform: translateX(-50%);
   width: 56px;

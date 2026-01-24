@@ -17,8 +17,8 @@
   },
   "dependencies": {
     "@nutui/nutui-react-taro": "^2.0.0",
-    "@plant-scanner/core": "file:../../packages/core/src",
-    "@plant-scanner/ui": "file:../../packages/ui/src",
+    "@plant-scanner/core": "file:../../packages/core",
+    "@plant-scanner/ui": "file:../../packages/ui",
     "@supabase/supabase-js": "^2.38.0",
     "@tanstack/react-query": "^5.0.0",
     "@tarojs/components": "3.6.29",

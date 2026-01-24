@@ -1,9 +1,16 @@
-import { createClient, SupabaseClient, Session } from '@supabase/supabase-js';
-import type { User } from '../types';
+import { createClient, SupabaseClient, Session, Provider } from '@supabase/supabase-js';
+import { getEnv } from '../utils/env';
+import type { 
+  User, 
+  UserPlant, 
+  ScanRecord, 
+  CareTask, 
+  CareProfile, 
+  ReminderConfig 
+} from '../types';
 
-// Environment variables (injected by Vercel)
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
-const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY;
+const SUPABASE_URL = getEnv('NEXT_PUBLIC_SUPABASE_URL') || getEnv('SUPABASE_URL');
+const SUPABASE_ANON_KEY = getEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY') || getEnv('SUPABASE_ANON_KEY');
 
 if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
   console.warn('Supabase URL or Anon Key not configured. Please set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY environment variables.');
@@ -39,9 +46,9 @@ export const auth = {
   // Sign in with OAuth (WeChat, Apple, Google)
   signInWithOAuth: async (provider: 'wechat' | 'apple' | 'google') => {
     return supabase.auth.signInWithOAuth({
-      provider,
+      provider: provider as Provider,
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`
+        redirectTo: typeof window !== 'undefined' ? `${window.location.origin}/auth/callback` : undefined
       }
     });
   },

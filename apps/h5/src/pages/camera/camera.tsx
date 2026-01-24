@@ -1,9 +1,13 @@
 import Taro, { useDidShow, useDidHide } from '@tarojs/taro';
 import { View, Text, Image, Button } from '@tarojs/components';
 import { useState, useRef } from 'react';
+import { plantIdentificationService } from '@plant-scanner/core';
 import './camera.scss';
 
 type CameraState = 'preview' | 'photo' | 'identifying';
+
+// Detect H5 environment
+const isH5 = typeof window !== 'undefined';
 
 export default function CameraPage() {
   const [state, setState] = useState<CameraState>('preview');
@@ -26,7 +30,13 @@ export default function CameraPage() {
   };
 
   useDidShow(() => {
-    // Initialize camera on show
+    // Skip camera initialization in H5 environment
+    if (isH5 || typeof (Taro as any).createCameraInstance !== 'function') {
+      console.log('H5 environment detected, using file input instead');
+      return;
+    }
+
+    // Initialize camera on show (mini-program only)
     (Taro as any).createCameraInstance({
       maxDuration: 60,
       devicePosition: cameraFacing,
@@ -38,7 +48,6 @@ export default function CameraPage() {
       })
       .catch((err: any) => {
         console.error('Camera init error:', err);
-        // Fallback for H5 or non-camera environments
       });
   });
 
@@ -47,7 +56,13 @@ export default function CameraPage() {
   });
 
   const handleCapture = () => {
-    cameraContext.current?.takePhoto({
+    // In H5 environment, trigger file input instead
+    if (isH5 || !cameraContext.current) {
+      handleChooseAlbum();
+      return;
+    }
+
+    cameraContext.current.takePhoto({
       quality: 'high',
       success: (res: any) => {
         setCapturedImage(res.tempImagePath);
@@ -55,9 +70,10 @@ export default function CameraPage() {
       },
       fail: (err: any) => {
         console.error('Capture error:', err);
-        // For H5/demo, use a placeholder
-        setCapturedImage('https://images.unsplash.com/photo-1459411552884-841db9b3cc2a?w=400');
-        setState('photo');
+        Taro.showToast({
+          title: '拍照失败，请重试',
+          icon: 'none'
+        });
       },
     });
   };
@@ -74,33 +90,37 @@ export default function CameraPage() {
     setIsLoading(true);
 
     try {
-      // Call identification API
-      const response = await Taro.request({
-        url: '/api/identify',
-        method: 'POST',
-        data: {
-          image: capturedImage,
-          userId: Taro.getStorageSync('userId') || undefined,
-        },
-      });
+      const userId = Taro.getStorageSync('userId') || undefined;
+      const result = await plantIdentificationService.identifyPlant(capturedImage, userId);
 
-      if (response.statusCode === 200 && response.data.success) {
+      if (result.success && result.data) {
         // Navigate to result page with data
         Taro.navigateTo({
-          url: `/pages/result/result?scan_id=${response.data.data.scan_id}`,
+          url: `/pages/result/result?scan_id=${result.data.scan_id}`,
         });
+      } else if (result.data?.threshold_met === false) {
+        // Low confidence - show error with suggestion
+        Taro.showModal({
+          title: '识别准确率不足',
+          content: result.error || '请提供更清晰的照片或尝试手动搜索',
+          showCancel: false,
+          confirmText: '知道了',
+        });
+        setState('photo');
       } else {
         Taro.showToast({
-          title: '识别失败，请重试',
+          title: result.error || '识别失败，请重试',
           icon: 'none',
+          duration: 3000,
         });
         setState('photo');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Identify error:', error);
       Taro.showToast({
-        title: '网络错误，请重试',
+        title: '网络错误，请检查连接后重试',
         icon: 'none',
+        duration: 3000,
       });
       setState('photo');
     } finally {
@@ -109,6 +129,27 @@ export default function CameraPage() {
   };
 
   const handleChooseAlbum = () => {
+    // H5 environment - use file input
+    if (isH5) {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'image/*';
+      input.onchange = (e: any) => {
+        const file = e.target?.files?.[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = (event: any) => {
+            setCapturedImage(event.target.result);
+            setState('photo');
+          };
+          reader.readAsDataURL(file);
+        }
+      };
+      input.click();
+      return;
+    }
+
+    // Mini-program environment
     Taro.chooseImage({
       count: 1,
       sourceType: ['album'],

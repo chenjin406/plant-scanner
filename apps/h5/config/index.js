@@ -3,17 +3,22 @@ const path = require('path');
 const config = {
   projectName: 'plant-scanner-h5',
   date: '2026-1-22',
-  designWidth: 750,
+  designWidth: 375,
   deviceRatio: {
-    640: 2.34 / 2,
+    640: 1.17,
     750: 1,
-    828: 1.81 / 2,
-    375: 2 / 1,
+    828: 0.905,
+    375: 1.0
   },
   sourceRoot: 'src',
   outputRoot: 'dist',
   plugins: ['@tarojs/plugin-framework-react', '@tarojs/plugin-platform-h5'],
-  defineConstants: {},
+  defineConstants: {
+    'process.env.SUPABASE_URL': JSON.stringify(process.env.SUPABASE_URL || ''),
+    'process.env.SUPABASE_ANON_KEY': JSON.stringify(process.env.SUPABASE_ANON_KEY || ''),
+    'process.env.NEXT_PUBLIC_SUPABASE_URL': JSON.stringify(process.env.NEXT_PUBLIC_SUPABASE_URL || ''),
+    'process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY': JSON.stringify(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''),
+  },
   copy: {
     patterns: [],
     options: {},
@@ -34,6 +39,18 @@ const config = {
     staticDirectory: 'static',
     esnextModules: ['@nutui/nutui-react-taro'],
     postcss: {
+      pxtransform: {
+        enable: true,
+        config: {
+          designWidth: 375,
+          deviceRatio: {
+            640: 1.17,
+            750: 1,
+            828: 0.905,
+            375: 1.0
+          }
+        },
+      },
       autoprefixer: {
         enable: true,
         config: {},
@@ -49,9 +66,31 @@ const config = {
     devServer: {
       port: 10086,
       host: '0.0.0.0',
+      client: {
+        overlay: {
+          errors: true,
+          warnings: false,
+        },
+      },
     },
     webpackChain(chain) {
       chain.resolve.alias.set('@', path.resolve(__dirname, '..', 'src'));
+
+      // Force single React instance from root node_modules
+      const rootNodeModules = path.resolve(__dirname, '..', '..', '..', 'node_modules');
+      chain.resolve.alias
+        .set('react', path.join(rootNodeModules, 'react'))
+        .set('react-dom', path.join(rootNodeModules, 'react-dom'))
+        .set('@tanstack/react-query', path.join(rootNodeModules, '@tanstack/react-query'));
+
+      chain.merge({
+        ignoreWarnings: [
+          (warning) =>
+            typeof warning?.message === 'string' &&
+            warning.message.includes('taro-video-core.js') &&
+            warning.message.includes('webpackExports'),
+        ],
+      });
 
       // Add TypeScript support for workspace packages using babel
       const corePath = path.resolve(__dirname, '..', '..', '..', 'packages', 'core', 'src');

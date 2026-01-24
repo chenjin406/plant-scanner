@@ -7,7 +7,11 @@
     "build": "tsc",
     "type-check": "tsc --noEmit"
   },
+  "peerDependencies": {
+    "react": "^18.2.0"
+  },
   "dependencies": {
+    "@tarojs/components": "3.6.29",
     "@nutui/nutui-react-taro": "^2.0.0"
   },
   "devDependencies": {

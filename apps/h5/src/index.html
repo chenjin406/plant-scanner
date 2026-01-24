@@ -7,6 +7,25 @@
       content="width=device-width,initial-scale=1, maximum-scale=1, user-scalable=0"
     />
     <title>Plant Scanner</title>
+    <script>
+      (function() {
+        function setRem() {
+          // baseSize = 24 provides a 20% increase over standard for better clarity
+          const baseSize = 24; 
+          const designWidth = 375;
+          const width = document.documentElement.clientWidth || window.innerWidth;
+          
+          // Allow wider layout (750px) for better "both sides adaptive" feel on desktop
+          const maxWidth = 750;
+          const scaleWidth = width > 768 ? maxWidth : width;
+          
+          const rem = (scaleWidth / designWidth) * baseSize;
+          document.documentElement.style.fontSize = rem + 'px';
+        }
+        setRem();
+        window.addEventListener('resize', setRem);
+      })();
+    </script>
   </head>
   <body></body>
 </html>

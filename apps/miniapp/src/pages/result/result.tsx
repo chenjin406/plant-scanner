@@ -1,43 +1,28 @@
 import Taro from '@tarojs/taro';
 import { View, Text, Image, ScrollView, Button } from '@tarojs/components';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useScanResult } from '@plant-scanner/core';
 import './result.scss';
 
-interface Suggestion {
-  species_id: string;
-  common_name: string;
-  scientific_name: string;
-  confidence: number;
-}
-
 export default function ResultPage() {
-  const { scan_id } = this.$router.params;
-  const [selectedSuggestion, setSelectedSuggestion] = useState<Suggestion | null>(null);
+  const { scan_id } = Taro.getCurrentInstance().router?.params || {};
+  const [selectedSuggestion, setSelectedSuggestion] = useState<any>(null);
 
-  // Mock data
-  const mockResult = {
-    image_url: 'https://images.unsplash.com/photo-1459411552884-841db9b3cc2a?w=600',
-    top_suggestion: {
-      species_id: 'uuid-1',
-      common_name: '龟背竹',
-      scientific_name: 'Monstera deliciosa',
-      confidence: 0.92,
-      care_profile: {
-        light_requirement: 'partial_shade',
-        water_frequency_days: 7,
-        difficulty: 'easy'
-      },
-      description: '龟背竹是一种原产于热带美洲的观叶植物，以其独特的裂叶而闻名。'
-    },
-    all_suggestions: [
-      { species_id: 'uuid-1', common_name: '龟背竹', scientific_name: 'Monstera deliciosa', confidence: 0.92 },
-      { species_id: 'uuid-2', common_name: '裂叶龟背竹', scientific_name: 'Monstera adansonii', confidence: 0.05 },
-      { species_id: 'uuid-3', common_name: '琴叶榕', scientific_name: 'Ficus lyrata', confidence: 0.02 }
-    ]
-  };
+  const { data: scanResponse, isLoading } = useScanResult(scan_id || '');
+  const result = scanResponse?.data;
 
-  const result = mockResult;
-  const suggestion = selectedSuggestion || result.top_suggestion;
+  useEffect(() => {
+    if (result?.top_suggestion) {
+      setSelectedSuggestion(result.top_suggestion);
+    }
+  }, [result]);
+
+  const suggestion = selectedSuggestion || result?.top_suggestion;
+  
+  if (isLoading || !suggestion) {
+    return <View className="result-page--loading"><Text>加载中...</Text></View>;
+  }
+
   const confidence = Math.round(suggestion.confidence * 100);
 
   const handleAddToGarden = () => {
@@ -108,7 +93,7 @@ export default function ResultPage() {
         {result.all_suggestions.length > 1 && (
           <View className="result__section">
             <Text className="result__section-title">其他可能</Text>
-            {result.all_suggestions.slice(1).map((s, index) => (
+            {result.all_suggestions.slice(1).map((s: any, index: number) => (
               <View
                 key={s.species_id}
                 className={`result__suggestion ${selectedSuggestion?.species_id === s.species_id ? 'result__suggestion--active' : ''}`}
@@ -139,7 +124,3 @@ export default function ResultPage() {
     </ScrollView>
   );
 }
-
-ResultPage.config = definePageConfig({
-  navigationBarTitleText: '识别结果'
-});

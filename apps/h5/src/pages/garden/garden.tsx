@@ -1,56 +1,39 @@
 import Taro from '@tarojs/taro';
 import { View, Text, Image, Input, ScrollView } from '@tarojs/components';
 import { useState } from 'react';
+import { SimpleBottomNav } from '@plant-scanner/ui';
+import { usePlants } from '@plant-scanner/core';
 import './garden.scss';
 
 type FilterType = 'all' | 'indoor' | 'outdoor' | 'needs_water';
 
-interface Plant {
-  id: string;
-  nickname: string;
-  species_name?: string;
-  status: string;
-  location_type: 'indoor' | 'outdoor';
-  image_url?: string;
-  next_task?: {
-    type: string;
-    due_at: string;
-  };
-}
-
-const mockPlants: Plant[] = [
-  {
-    id: '1',
-    nickname: '小绿',
-    species_name: '龟背竹',
-    status: 'healthy',
-    location_type: 'indoor',
-    image_url: 'https://images.unsplash.com/photo-1614594975525-e45190c55d0b?w=200',
-    next_task: { type: 'water', due_at: '明天' }
-  },
-  {
-    id: '2',
-    nickname: '肉肉',
-    species_name: '多肉植物',
-    status: 'needs_attention',
-    location_type: 'indoor',
-    image_url: 'https://images.unsplash.com/photo-1466692476868-aef1dfb1e735?w=200',
-    next_task: { type: 'water', due_at: '今天' }
-  },
-  {
-    id: '3',
-    nickname: '阳光',
-    species_name: '绿萝',
-    status: 'healthy',
-    location_type: 'outdoor',
-    image_url: 'https://images.unsplash.com/photo-1596724852267-1a8340e73258?w=200'
-  }
-];
-
 export default function GardenPage() {
   const [filter, setFilter] = useState<FilterType>('all');
   const [searchQuery, setSearchQuery] = useState('');
-  const [plants] = useState<Plant[]>(mockPlants);
+  
+  // TODO: Get current user ID from auth store
+  const userId = '00000000-0000-0000-0000-000000000001';
+  const { data: plantsResponse, isLoading } = usePlants(userId);
+  const plants = plantsResponse?.data || [];
+
+  const handleBottomNav = (key: string) => {
+    if (key === 'scan') {
+      Taro.navigateTo({ url: '/pages/camera/camera' });
+      return;
+    }
+
+    const routes: Record<string, string> = {
+      home: '/pages/index/index',
+      garden: '/pages/garden/garden',
+      search: '/pages/search/search',
+      auth: '/pages/auth/auth'
+    };
+
+    const url = routes[key];
+    if (url) {
+      Taro.reLaunch({ url });
+    }
+  };
 
   const handleNavigate = (url?: string) => {
     if (url) {
@@ -64,7 +47,7 @@ export default function GardenPage() {
     });
   };
 
-  const filteredPlants = plants.filter(plant => {
+  const filteredPlants = plants.filter((plant: any) => {
     // Apply filter
     if (filter === 'indoor' && plant.location_type !== 'indoor') return false;
     if (filter === 'outdoor' && plant.location_type !== 'outdoor') return false;
@@ -75,14 +58,15 @@ export default function GardenPage() {
       const query = searchQuery.toLowerCase();
       return (
         plant.nickname.toLowerCase().includes(query) ||
-        plant.species_name?.toLowerCase().includes(query)
+        plant.species_name?.toLowerCase().includes(query) ||
+        plant.species?.common_name?.toLowerCase().includes(query)
       );
     }
 
     return true;
   });
 
-  const priorityPlants = plants.filter(p => p.status === 'needs_attention');
+  const priorityPlants = plants.filter((p: any) => p.status === 'needs_attention');
 
   const handlePlantClick = (plantId: string) => {
     Taro.navigateTo({
@@ -96,11 +80,15 @@ export default function GardenPage() {
     });
   };
 
+  if (isLoading) {
+    return <View className="garden-page garden-page--loading">加载中...</View>;
+  }
+
   return (
     <View className="garden-page">
       <ScrollView className="garden-page__content" scrollY>
         <View className="garden__topbar">
-          <Text className="garden__icon">☰</Text>
+          <View className="garden__icon" />
           <Text className="garden__title">我的花园</Text>
           <View className="garden__avatar">👤</View>
         </View>
@@ -112,7 +100,7 @@ export default function GardenPage() {
               className="garden__search-input"
               placeholder="搜索我的植物"
               value={searchQuery}
-              onInput={(e) => setSearchQuery(e.detail.value)}
+              onInput={(e: any) => setSearchQuery(e.detail.value)}
             />
           </View>
         </View>
@@ -141,7 +129,7 @@ export default function GardenPage() {
               <View className="garden__priority-icon">💧</View>
             </View>
             <View className="garden__priority-avatars">
-              {priorityPlants.slice(0, 3).map((plant) => (
+              {priorityPlants.slice(0, 3).map((plant: any) => (
                 <Image
                   key={plant.id}
                   src={plant.image_url || ''}
@@ -154,7 +142,7 @@ export default function GardenPage() {
         )}
 
         <View className="garden__grid">
-          {filteredPlants.map((plant) => (
+          {filteredPlants.map((plant: any) => (
             <View key={plant.id} className="garden__card" onClick={() => handlePlantClick(plant.id)}>
               <View className="garden__card-image">
                 <Image src={plant.image_url || ''} mode="aspectFill" className="garden__card-photo" />
@@ -164,7 +152,7 @@ export default function GardenPage() {
               </View>
               <View className="garden__card-body">
                 <Text className="garden__card-name">{plant.nickname}</Text>
-                <Text className="garden__card-species">{plant.species_name || ''}</Text>
+                <Text className="garden__card-species">{plant.species_name || plant.species?.common_name || ''}</Text>
               </View>
             </View>
           ))}
@@ -172,29 +160,21 @@ export default function GardenPage() {
 
         <View className="garden__spacer"></View>
       </ScrollView>
-
-      <View className="garden__nav">
-        <View className="garden__nav-item" onClick={() => handleNavigate('/pages/index/index')}>
-          <Text className="garden__nav-icon">🏠</Text>
-          <Text className="garden__nav-text">首页</Text>
-        </View>
-        <View className="garden__nav-item garden__nav-item--active">
-          <Text className="garden__nav-icon">🌿</Text>
-          <Text className="garden__nav-text">我的花园</Text>
-        </View>
-        <View className="garden__nav-gap"></View>
-        <View className="garden__nav-item" onClick={() => handleNavigate()}>
-          <Text className="garden__nav-icon">👥</Text>
-          <Text className="garden__nav-text">社区</Text>
-        </View>
-        <View className="garden__nav-item" onClick={() => handleNavigate()}>
-          <Text className="garden__nav-icon">⚙️</Text>
-          <Text className="garden__nav-text">设置</Text>
-        </View>
-      </View>
       <View className="garden__fab" onClick={handleAddPlant}>
         <Text className="garden__fab-icon">+</Text>
       </View>
+
+      <SimpleBottomNav
+        activeKey="garden"
+        onChange={handleBottomNav}
+        items={[
+          { key: 'home', label: '首页', icon: '🏠' },
+          { key: 'garden', label: '花园', icon: '🌿' },
+          { key: 'scan', label: '识别', icon: '📷' },
+          { key: 'search', label: '搜索', icon: '🔎' },
+          { key: 'auth', label: '我的', icon: '👤' }
+        ]}
+      />
     </View>
   );
 }

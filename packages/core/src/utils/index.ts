@@ -1,4 +1,6 @@
-// Date formatting utilities
+import { getEnv, isDev } from '../utils/env';
+import type { CareTask } from '../types';
+
 export const formatDate = (date: string | Date, format: 'full' | 'short' | 'time' = 'short'): string => {
   const d = new Date(date);
   const options: Intl.DateTimeFormatOptions =
@@ -235,7 +237,7 @@ export const formatConfidence = (confidence: number): string => {
 
 // URL helpers
 export const buildApiUrl = (path: string): string => {
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL || '/api';
+  const baseUrl = getEnv('NEXT_PUBLIC_API_URL') || '/api';
   return `${baseUrl}${path}`;
 };
 
@@ -267,3 +269,5 @@ export const getCache = <T>(key: string): T | null => {
 export const clearCache = (key: string): void => {
   localStorage.removeItem(key);
 };
+
+export * from './cache';

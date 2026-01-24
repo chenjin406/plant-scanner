@@ -2,6 +2,7 @@ import Taro from '@tarojs/taro';
 import { View, Text, Image, Button, ScrollView } from '@tarojs/components';
 import { useState, useEffect } from 'react';
 import { CareTag } from '@plant-scanner/ui';
+import { useScanResult } from '@plant-scanner/core';
 import './result.scss';
 
 interface Suggestion {
@@ -25,6 +26,16 @@ export default function ResultPage() {
   const [selectedSuggestion, setSelectedSuggestion] = useState<Suggestion | null>(null);
   const [showFullDescription, setShowFullDescription] = useState(false);
 
+  const { scan_id } = Taro.getCurrentInstance().router?.params || {};
+  const { data: scanResponse, isLoading } = useScanResult(scan_id || '');
+  const result = scanResponse?.data;
+
+  useEffect(() => {
+    if (result?.top_suggestion) {
+      setSelectedSuggestion(result.top_suggestion);
+    }
+  }, [result]);
+
   const handleNavigate = (url?: string) => {
     if (url) {
       Taro.navigateTo({ url });
@@ -36,62 +47,6 @@ export default function ResultPage() {
       icon: 'none'
     });
   };
-
-  const { scan_id } = Taro.getCurrentInstance().router?.params || {};
-
-  // Mock data for demo (would come from API in real implementation)
-  const mockResult: ResultData = {
-    scan_id: scan_id || 'demo-123',
-    image_url: 'https://images.unsplash.com/photo-1459411552884-841db9b3cc2a?w=600',
-    top_suggestion: {
-      species_id: 'uuid-1',
-      common_name: '龟背竹',
-      scientific_name: 'Monstera deliciosa',
-      confidence: 0.92,
-      care_profile: {
-        light_requirement: 'partial_shade',
-        water_frequency_days: 7,
-        temperature_min_c: 15,
-        temperature_max_c: 30,
-        difficulty: 'easy',
-        expert_tips: ['保持土壤微湿但不要积水', '避免阳光直射'],
-        troubleshooting: [
-          {
-            problem: '叶片发黄',
-            symptoms: ['叶片整体变黄'],
-            solutions: ['减少浇水频率', '检查是否有积水']
-          }
-        ]
-      },
-      description: '龟背竹是一种原产于热带美洲的观叶植物，以其独特的裂叶而闻名。它是非常受欢迎的室内观赏植物，能够净化空气，增加室内绿意。龟背竹喜欢温暖湿润的环境，适合在明亮的散射光下生长。'
-    },
-    all_suggestions: [
-      {
-        species_id: 'uuid-1',
-        common_name: '龟背竹',
-        scientific_name: 'Monstera deliciosa',
-        confidence: 0.92
-      },
-      {
-        species_id: 'uuid-2',
-        common_name: '裂叶龟背竹',
-        scientific_name: 'Monstera adansonii',
-        confidence: 0.05
-      },
-      {
-        species_id: 'uuid-3',
-        common_name: '琴叶榕',
-        scientific_name: 'Ficus lyrata',
-        confidence: 0.02
-      }
-    ]
-  };
-
-  const result = mockResult;
-
-  useEffect(() => {
-    setSelectedSuggestion(result.top_suggestion);
-  }, [result]);
 
   const handleAddToGarden = () => {
     Taro.showModal({
@@ -192,7 +147,7 @@ export default function ResultPage() {
         {result.all_suggestions.length > 1 && (
           <View className="result__suggestions">
             <Text className="result__suggestions-title">其他可能</Text>
-            {result.all_suggestions.slice(1).map((suggestion, index) => (
+            {result.all_suggestions.slice(1).map((suggestion: any, index: number) => (
               <View
                 key={suggestion.species_id}
                 className={`result__suggestion ${selectedSuggestion?.species_id === suggestion.species_id ? 'result__suggestion--active' : ''}`}

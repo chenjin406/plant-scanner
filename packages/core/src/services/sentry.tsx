@@ -1,7 +1,9 @@
 import * as Sentry from '@sentry/react';
 import { BrowserTracing } from '@sentry/browser';
+import React from 'react';
+import { getEnv, isDev } from '../utils/env';
 
-const SENTRY_DSN = process.env.NEXT_PUBLIC_SENTRY_DSN;
+const SENTRY_DSN = getEnv('NEXT_PUBLIC_SENTRY_DSN');
 
 if (SENTRY_DSN) {
   Sentry.init({
@@ -9,15 +11,15 @@ if (SENTRY_DSN) {
     integrations: [
       new BrowserTracing({
         tracingOrigins: ['localhost', /^\//],
-        routeHook: (route) => {
+        routeHook: (route: any) => {
           // Add custom route naming
           return route;
         }
       })
     ],
     tracesSampleRate: 0.2,
-    environment: process.env.NODE_ENV || 'development',
-    release: process.env.NEXT_PUBLIC_APP_VERSION || '1.0.0',
+    environment: getEnv('NODE_ENV') || 'development',
+    release: getEnv('NEXT_PUBLIC_APP_VERSION') || '1.0.0',
 
     // Configure which errors to ignore
     ignoreErrors: [
@@ -28,7 +30,7 @@ if (SENTRY_DSN) {
     ],
 
     // Before send hook for filtering
-    beforeSend(event, hint) {
+    beforeSend(event: any, hint: any) {
       // Filter out certain errors
       const error = hint.originalException;
       if (error && error.message && error.message.includes('Network request failed')) {

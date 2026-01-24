@@ -1,6 +1,7 @@
 import Taro, { useDidShow, useDidHide } from '@tarojs/taro';
 import { View, Text, Image, Button } from '@tarojs/components';
 import { useState, useRef } from 'react';
+import { plantIdentificationService } from '@plant-scanner/core';
 import './camera.scss';
 
 type CameraState = 'preview' | 'photo' | 'identifying';
@@ -44,34 +45,47 @@ export default function CameraPage() {
     setState('preview');
   };
 
-  const handleIdentify = () => {
+  const handleIdentify = async () => {
     if (!capturedImage) return;
 
     setState('identifying');
     setIsLoading(true);
 
-    Taro.request({
-      url: '/api/identify',
-      method: 'POST',
-      data: { image: capturedImage },
-      success: (res) => {
-        if (res.statusCode === 200 && res.data.success) {
-          Taro.navigateTo({
-            url: `/pages/result/index?scan_id=${res.data.data.scan_id}`
-          });
-        } else {
-          Taro.showToast({ title: '识别失败，请重试', icon: 'none' });
-          setState('photo');
-        }
-      },
-      fail: () => {
-        Taro.showToast({ title: '网络错误', icon: 'none' });
+    try {
+      const userId = Taro.getStorageSync('userId') || undefined;
+      const result = await plantIdentificationService.identifyPlant(capturedImage, userId);
+
+      if (result.success && result.data) {
+        Taro.navigateTo({
+          url: `/pages/result/index?scan_id=${result.data.scan_id}`
+        });
+      } else if (result.data?.threshold_met === false) {
+        Taro.showModal({
+          title: '识别准确率不足',
+          content: result.error || '请提供更清晰的照片或尝试手动搜索',
+          showCancel: false,
+          confirmText: '知道了',
+        });
         setState('photo');
-      },
-      complete: () => {
-        setIsLoading(false);
+      } else {
+        Taro.showToast({
+          title: result.error || '识别失败，请重试',
+          icon: 'none',
+          duration: 3000,
+        });
+        setState('photo');
       }
-    });
+    } catch (error: any) {
+      console.error('Identify error:', error);
+      Taro.showToast({
+        title: '网络错误，请检查连接后重试',
+        icon: 'none',
+        duration: 3000,
+      });
+      setState('photo');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleChooseAlbum = () => {

@@ -2,27 +2,36 @@ import Taro from '@tarojs/taro';
 import { View, Text, Input, Image, ScrollView } from '@tarojs/components';
 import { useState, useEffect } from 'react';
 import { PlantCard, NoResultsState, LoadingSpinner } from '@plant-scanner/ui';
+import { SimpleBottomNav } from '@plant-scanner/ui';
+import { usePlantSearch } from '@plant-scanner/core';
 import './search.scss';
-
-interface SearchResult {
-  id: string;
-  common_name: string;
-  scientific_name: string;
-  category: string;
-  image_urls: string[];
-  care_profile: {
-    difficulty: string;
-    light_requirement: string;
-    water_frequency_days: number;
-  };
-}
 
 export default function SearchPage() {
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState<SearchResult[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [hasSearched, setHasSearched] = useState(false);
   const [debouncedQuery, setDebouncedQuery] = useState('');
+
+  const { data: searchResponse, isLoading } = usePlantSearch(debouncedQuery);
+  const results = searchResponse?.data || [];
+  const hasSearched = debouncedQuery.length >= 2;
+
+  const handleBottomNav = (key: string) => {
+    if (key === 'scan') {
+      Taro.navigateTo({ url: '/pages/camera/camera' });
+      return;
+    }
+
+    const routes: Record<string, string> = {
+      home: '/pages/index/index',
+      garden: '/pages/garden/garden',
+      search: '/pages/search/search',
+      auth: '/pages/auth/auth'
+    };
+
+    const url = routes[key];
+    if (url) {
+      Taro.reLaunch({ url });
+    }
+  };
 
   // Debounce search
   useEffect(() => {
@@ -33,60 +42,15 @@ export default function SearchPage() {
     return () => clearTimeout(timer);
   }, [query]);
 
-  // Auto-search on debounced query change
-  useEffect(() => {
-    if (debouncedQuery.length >= 2) {
-      handleSearch(debouncedQuery);
-    } else {
-      setResults([]);
-      setHasSearched(false);
-    }
-  }, [debouncedQuery]);
-
-  const handleSearch = async (searchQuery: string) => {
-    if (!searchQuery.trim()) return;
-
-    setIsLoading(true);
-    setHasSearched(true);
-
-    try {
-      const response = await Taro.request({
-        url: `/api/search?q=${encodeURIComponent(searchQuery)}`,
-        method: 'GET',
-      });
-
-      if (response.statusCode === 200 && response.data.success) {
-        setResults(response.data.data || []);
-      } else {
-        setResults([]);
-        Taro.showToast({
-          title: '搜索失败，请重试',
-          icon: 'none',
-        });
-      }
-    } catch (error) {
-      console.error('Search error:', error);
-      setResults([]);
-      Taro.showToast({
-        title: '网络错误，请重试',
-        icon: 'none',
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleResultClick = (result: SearchResult) => {
+  const handleResultClick = (result: any) => {
     // Navigate to plant detail/care guide
     Taro.navigateTo({
-      url: `/pages/care-guide/index?species_id=${result.id}`,
+      url: `/pages/care-guide/care-guide?species_id=${result.id}`,
     });
   };
 
   const handleClearSearch = () => {
     setQuery('');
-    setResults([]);
-    setHasSearched(false);
   };
 
   const handleFeedback = () => {
@@ -123,7 +87,7 @@ export default function SearchPage() {
             className="search__input"
             placeholder="输入植物名称（如：龟背竹、绿萝）..."
             value={query}
-            onInput={(e) => setQuery(e.detail.value)}
+            onInput={(e: any) => setQuery(e.detail.value)}
             focus
           />
           {query && (
@@ -146,7 +110,7 @@ export default function SearchPage() {
               <View className="search__results">
                 <Text className="search__results-count">找到 {results.length} 个结果</Text>
                 <View className="search__grid">
-                  {results.map((result) => (
+                  {results.map((result: any) => (
                     <View
                       key={result.id}
                       className="search__result-item"
@@ -207,6 +171,18 @@ export default function SearchPage() {
           </View>
         )}
       </ScrollView>
+
+      <SimpleBottomNav
+        activeKey="search"
+        onChange={handleBottomNav}
+        items={[
+          { key: 'home', label: '首页', icon: '🏠' },
+          { key: 'garden', label: '花园', icon: '🌿' },
+          { key: 'scan', label: '识别', icon: '📷' },
+          { key: 'search', label: '搜索', icon: '🔎' },
+          { key: 'auth', label: '我的', icon: '👤' }
+        ]}
+      />
     </View>
   );
 }

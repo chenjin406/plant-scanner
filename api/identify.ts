@@ -1,5 +1,6 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
+import sharp from 'sharp';
 
 // Initialize Supabase client
 const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -33,7 +34,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     // Check if image is a base64 string or URL
-    let imageUrl: string;
     let imageBuffer: Buffer;
 
     if (image.startsWith('data:image')) {
@@ -49,11 +49,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(400).json({ success: false, error: 'Invalid image format' });
     }
 
-    // Upload image to Supabase Storage
+    // Compress image to 1024px max dimension with JPEG quality 0.8 (PRD requirement)
+    const compressedImage = await sharp(imageBuffer)
+      .resize(1024, 1024, {
+        fit: 'inside',
+        withoutEnlargement: true
+      })
+      .jpeg({ quality: 80 })
+      .toBuffer();
+
+    // Upload compressed image to Supabase Storage
     const imagePath = `scans/${userId || 'anonymous'}/${Date.now()}.jpg`;
     const { data: uploadData, error: uploadError } = await supabase.storage
       .from('plant-images')
-      .upload(imagePath, imageBuffer, {
+      .upload(imagePath, compressedImage, {
         contentType: 'image/jpeg',
         cacheControl: '3600'
       });
@@ -67,13 +76,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       ? supabase.storage.from('plant-images').getPublicUrl(uploadData.path).data.publicUrl
       : null;
 
-    // Call PlantNet API
+    // Call PlantNet API with compressed image
     const formData = new FormData();
-    formData.append('images', new Blob([imageBuffer], { type: 'image/jpeg' }));
+    formData.append('images', new Blob([compressedImage], { type: 'image/jpeg' }));
     formData.append('organs', 'leaf'); // Default to leaf
     formData.append('api-key', PLANTNET_API_KEY!);
 
-    const plantNetResponse = await fetch(PLANTNET_URL, {
+    const plantNetResponse = await fetch(PLANTNET_API_URL, {
       method: 'POST',
       body: formData
     });
@@ -84,13 +93,26 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const plantNetData = await plantNetResponse.json();
 
-    // Process results
+    // Process results with confidence threshold check (PRD requirement: 0.5)
     const suggestions = plantNetData.suggestions || [];
     const topSuggestion = suggestions[0];
 
-    // Enrich with local database data
+    // Check if top suggestion meets confidence threshold
+    if (!topSuggestion || topSuggestion.score < 0.5) {
+      return res.status(200).json({
+        success: false,
+        error: '识别准确率不足，请提供更清晰的照片或尝试手动搜索',
+        data: {
+          scan_id: uploadData?.path || `temp_${Date.now()}`,
+          confidence: topSuggestion?.score || 0,
+          threshold_met: false
+        }
+      });
+    }
+
+    // Enrich with local database data (top 3 results as per PRD)
     let enrichedResults = await Promise.all(
-      suggestions.slice(0, 5).map(async (suggestion: any) => {
+      suggestions.slice(0, 3).map(async (suggestion: any) => {
         const { data: speciesData } = await supabase
           .from('plant_species')
           .select('*')
